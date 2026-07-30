@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Jira Diff Highlighter — on-prem fixture</title>
+    <!-- Rough stand-in for Jira Server's own activity-tab styling. -->
+    <style>
+        body {
+            margin: 0;
+            padding: 16px;
+            background: #fff;
+            color: #172b4d;
+            font: 14px/1.42 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        .issuePanelWrapper { max-width: 1180px; margin: 0 auto; }
+        .issue-data-block { border-top: 1px solid #dfe1e6; padding: 12px 0; }
+        .action-details { color: #6b778c; font-size: 12px; margin-bottom: 8px; }
+        .action-details a { color: #0052cc; text-decoration: none; }
+        .changehistory table { border-collapse: collapse; width: 100%; }
+        .changehistory td { padding: 6px 10px; vertical-align: top; }
+        .activity-name { font-weight: 600; color: #6b778c; width: 20%; }
+        .activity-old-val, .activity-new-val { width: 40%; word-break: break-word; }
+        .hist-value { color: #97a0af; }
+        .aui-avatar-inner img { border-radius: 50%; vertical-align: middle; }
+        h2.demo { font-size: 15px; margin: 0 0 12px; }
+    </style>
+    <link rel="stylesheet" href="../content/styles.css">
+    <script>
+        // Stand-in for chrome.storage while running outside the extension.
+        window.JDH_TEST_SETTINGS = { viewMode: 'split' };
+    </script>
+</head>
+<body>
+<h2 class="demo">Offline fixture — Jira Server / Data Center change history</h2>
+
+<div
+    class="issuePanelWrapper"
+    id="changehistory-tabpanel-tabpanel"
+    tabindex="0"
+    role="tabpanel"
+    aria-labelledby="changehistory-tabpanel-link"
+>
+    <div class="issuePanelProgress"></div>
+    <div class="issuePanelContainer" id="issue_actions_container">
+        <div class="issuePanelHeaderContainer" id="issue_actions_header_container"></div>
+
+        <div class="issue-data-block" id="changehistory-2160865">
+            <div class="actionContainer">
+                <div class="action-details" id="changehistorydetails_2160865">
+                    <a class="user-hover user-avatar" rel="zavadilm" id="changehistoryauthor_2160865"
+                       href="/secure/ViewProfile.jspa?name=zavadilm">Michal Zavadil</a>
+                    made changes -
+                    <span class="date" title="02. February 26 12:55">02. February 26 12:55</span>
+                </div>
+                <div class="changehistory action-body">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" id="changehistory_2160865">
+                        <tbody>
+                            <tr>
+                                <td width="20%" class="activity-name">Worklog Id</td>
+                                <td width="40%" class="activity-old-val">
+                                    <b>Original:</b>
+                                    904728
+                                    <span class="hist-value">[ 904728 ]</span>
+                                </td>
+                                <td width="40%" class="activity-new-val"></td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="activity-name">Remaining Estimate</td>
+                                <td width="40%" class="activity-old-val"></td>
+                                <td width="40%" class="activity-new-val">
+                                    <b>New:</b>
+                                    0 minutes
+                                    <span class="hist-value">[ 0 ]</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="activity-name">Time Spent</td>
+                                <td width="40%" class="activity-old-val"></td>
+                                <td width="40%" class="activity-new-val">
+                                    <b>New:</b>
+                                    5 hours
+                                    <span class="hist-value">[ 18000 ]</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="issue-data-block" id="changehistory-2158025">
+            <div class="actionContainer">
+                <div class="action-details" id="changehistorydetails_2158025">
+                    <a class="user-hover user-avatar" rel="zavadilm" id="changehistoryauthor_2158025"
+                       href="/secure/ViewProfile.jspa?name=zavadilm">Michal Zavadil</a>
+                    made changes -
+                    <span class="date" title="29. January 26 13:30">29. January 26 13:30</span>
+                </div>
+                <div class="changehistory action-body">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" id="changehistory_2158025">
+                        <tbody>
+                            <tr>
+                                <td width="20%" class="activity-name">Description</td>
+                                <td width="40%" class="activity-old-val"><b>Original:</b>h2. Story<br/>
+<br/>
+Balicek {_}*Simple.OData.Client*{_}, ktery pouzivame pro odata komunikaci s CRM jiz neni nejakou dobu udrzovan a jeho podpora byla oficialne ukoncena. Je potreba ho vyhledove nahradit jinym pristupem.<br/>
+<br/>
+&nbsp;<br/>
+h2. Detail<br/>
+<br/>
+<a href="https://github.com/simple-odata-client/Simple.OData.Client">https://github.com/simple-odata-client/Simple.OData.Client</a><br/>
+<br/>
+!image-2026-01-29-13-24-54-094.png|width=538,height=89!<br/>
+<br/>
+Prepsat celou komunikaci s CRM zpomoci oficialniho Microsoft balicku _*Microsoft.OData.Client*_&nbsp;<br/>
+<br/>
+<a href="https://learn.microsoft.com/en-us/odata/client/getting-started">https://learn.microsoft.com/en-us/odata/client/getting-started</a><br/>
+<br/>
+&nbsp;<br/>
+<br/>
+&nbsp;<br/>
+h2. Akceptacni kriteria<br/>
+&nbsp;* Vsechny endpointy co komunikuji s CRM budou fungovat bezezmeny<br/>
+&nbsp;* Overit, ze rozsireni CRM o novy field ci table nebu spusobovat pat aplikace<br/>
+&nbsp;* Overit, za CRM action jsou korektne volane</td>
+                                <td width="40%" class="activity-new-val"><b>New:</b>h2. Story<br/>
+<br/>
+Balicek {_}*Simple.OData.Client*{_}, ktery pouzivame pro odata komunikaci s CRM jiz neni nejakou dobu udrzovan a jeho podpora byla oficialne ukoncena. Je potreba ho vyhledove nahradit jinym pristupem.<br/>
+h2. Detail<br/>
+<br/>
+See: [<a href="https://github.com/simple-odata-client/Simple.OData.Client">https://github.com/simple-odata-client/Simple.OData.Client</a>]<br/>
+<br/>
+!image-2026-01-29-13-24-54-094.png|width=538,height=89!<br/>
+<br/>
+Prepsat celou komunikaci s CRM zpomoci oficialniho Microsoft balicku _*Microsoft.OData.Client*_&nbsp;<br/>
+<br/>
+Oficialni dokumentace: [<a href="https://learn.microsoft.com/en-us/odata/client/getting-started">https://learn.microsoft.com/en-us/odata/client/getting-started</a>]<br/>
+h2. Akceptacni kriteria<br/>
+&nbsp;* Vsechny endpointy co komunikuji s CRM budou fungovat bezezmeny<br/>
+&nbsp;* Overit, ze rozsireni CRM o novy field ci table nebu spusobovat pat aplikace<br/>
+&nbsp;* Overit, za CRM action jsou korektne volane<br/>
+&nbsp;* ...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="issue-data-block" id="changehistory-2158026">
+            <div class="actionContainer">
+                <div class="action-details">
+                    <a href="#">Michal Zavadil</a> made changes -
+                    <span class="date">29. January 26 13:31</span>
+                </div>
+                <div class="changehistory action-body">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" id="changehistory_2158026">
+                        <tbody>
+                            <tr>
+                                <td width="20%" class="activity-name">Summary</td>
+                                <td width="40%" class="activity-old-val"><b>Original:</b>Nahradit Simple.OData.Client za oficialni balicek</td>
+                                <td width="40%" class="activity-new-val"><b>New:</b>Nahradit Simple.OData.Client za oficialni Microsoft balicek</td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="activity-name">Environment</td>
+                                <td width="40%" class="activity-old-val"></td>
+                                <td width="40%" class="activity-new-val"><b>New:</b>Produkce: CRM 9.2<br/>
+Test: CRM 9.1<br/>
+.NET 8, Windows Server 2022</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="issue-data-block" id="changehistory-2158027">
+            <div class="actionContainer">
+                <div class="action-details">
+                    <a href="#">Petra Nováková</a> made changes -
+                    <span class="date">30. January 26 09:12</span>
+                </div>
+                <div class="changehistory action-body">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" id="changehistory_2158027">
+                        <tbody>
+                            <tr>
+                                <td width="20%" class="activity-name">Description</td>
+                                <td width="40%" class="activity-old-val"><b>Original:</b>h2. Zadani<br/>
+<br/>
+Radek 1 - beze zmeny<br/>
+Radek 2 - beze zmeny<br/>
+Radek 3 - beze zmeny<br/>
+Radek 4 - beze zmeny<br/>
+Radek 5 - beze zmeny<br/>
+Radek 6 - beze zmeny<br/>
+Radek 7 - beze zmeny<br/>
+Radek 8 - beze zmeny<br/>
+Radek 9 - beze zmeny<br/>
+Radek 10 - beze zmeny<br/>
+<br/>
+h3. Poznamka<br/>
+Puvodni text ktery bude cely prepsan necim uplne jinym.<br/>
+<br/>
+Konec.</td>
+                                <td width="40%" class="activity-new-val"><b>New:</b>h2. Zadani<br/>
+<br/>
+Radek 1 - beze zmeny<br/>
+Radek 2 - beze zmeny<br/>
+Radek 3 - beze zmeny<br/>
+Radek 4 - beze zmeny<br/>
+Radek 5 - beze zmeny<br/>
+Radek 6 - beze zmeny<br/>
+Radek 7 - beze zmeny<br/>
+Radek 8 - beze zmeny<br/>
+Radek 9 - beze zmeny<br/>
+Radek 10 - beze zmeny<br/>
+<br/>
+h3. Poznamka<br/>
+Zcela odlisna veta bez spolecnych slov, jina myslenka.<br/>
+Pridany druhy radek poznamky.<br/>
+<br/>
+Konec.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="issue-data-block" id="changehistory-2158024">
+            <div class="actionContainer">
+                <div class="action-details" id="changehistorydetails_2158024">
+                    <a href="#">Michal Zavadil</a> made changes -
+                    <span class="date" title="29. January 26 13:29">29. January 26 13:29</span>
+                </div>
+                <div class="changehistory action-body">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" id="changehistory_2158024">
+                        <tbody>
+                            <tr>
+                                <td width="20%" class="activity-name">Rank</td>
+                                <td width="40%" class="activity-old-val"></td>
+                                <td width="40%" class="activity-new-val"><b>New:</b>Ranked higher</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="issue-data-block" id="issuecreated-109694">
+            <div class="actionContainer">
+                <div class="action-details" id="issuecreateddetails-109694">
+                    <a href="#">Michal Zavadil</a> created issue -
+                    <span class="date" title="29. January 26 13:29">29. January 26 13:29</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../common/settings.js"></script>
+<script src="../content/diff.js"></script>
+<script src="../content/extract.js"></script>
+<script src="../content/render.js"></script>
+<script src="../content/content.js"></script>
+</body>
+</html>

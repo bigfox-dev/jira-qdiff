@@ -1,0 +1,240 @@
+:root {
+    --bg: #ffffff;
+    --card: #f7f8f9;
+    --border: #dfe1e6;
+    --text: #172b4d;
+    --muted: #6b778c;
+    --accent: #0c66e4;
+    --danger: #ae2a19;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #1d2125;
+        --card: #22272b;
+        --border: #3c4657;
+        --text: #c7d1db;
+        --muted: #8c9bab;
+        --accent: #579dff;
+        --danger: #ff9c8f;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 340px;
+    margin: 0;
+    padding: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif;
+}
+
+.header {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 10px;
+    margin-bottom: 8px;
+}
+
+.site-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.site-info {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.site-info strong {
+    display: block;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.hint {
+    margin: 6px 0 0;
+    font-size: 11.5px;
+    color: var(--muted);
+}
+
+.hint.is-error {
+    color: var(--danger);
+}
+
+.field {
+    margin-top: 9px;
+}
+
+.field.indent {
+    padding-left: 22px;
+}
+
+.switch {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 7px;
+    cursor: pointer;
+}
+
+.switch:first-child {
+    margin-top: 0;
+}
+
+.switch input {
+    margin: 0;
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+}
+
+.switch code {
+    font-size: 11px;
+}
+
+.segmented {
+    display: flex;
+    margin-top: 4px;
+}
+
+.segmented button {
+    flex: 1 1 0;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    margin-left: -1px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.segmented button:first-child {
+    margin-left: 0;
+    border-radius: 4px 0 0 4px;
+}
+
+.segmented button:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+.segmented button.is-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+}
+
+input[type="number"],
+textarea {
+    width: 100%;
+    margin-top: 4px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+    resize: vertical;
+}
+
+textarea {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+}
+
+.btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+    border-color: var(--accent);
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-danger {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--danger);
+}
+
+.btn-quiet {
+    color: var(--muted);
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status {
+    flex: 1 1 auto;
+    text-align: right;
+    font-size: 11px;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

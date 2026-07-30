@@ -1,0 +1,14 @@
+{
+    "name": "jira-diff-highlighter-onprem",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Chrome/Firefox extension that renders readable diffs on the History tab of on-premise Jira (Server / Data Center).",
+    "scripts": {
+        "test": "node --test test/diff.test.mjs test/background.test.mjs",
+        "build": "node tools/build.js",
+        "build:zip": "node tools/build.js --zip",
+        "serve": "node tools/serve.js",
+        "icons": "node tools/make-icons.js"
+    },
+    "license": "MIT"
+}

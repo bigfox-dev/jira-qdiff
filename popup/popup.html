@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Jira Diff Highlighter</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <header class="header">
+        <h1>Jira Diff Highlighter</h1>
+        <span class="tag">Server / Data&nbsp;Center</span>
+    </header>
+
+    <section class="card" id="site-card">
+        <div class="site-row">
+            <div class="site-info">
+                <span class="label">This site</span>
+                <strong id="site-host">—</strong>
+            </div>
+            <button type="button" id="site-toggle" class="btn btn-primary" disabled>…</button>
+        </div>
+        <p class="hint" id="site-hint">Grant access to your Jira host so the diff view can run there.</p>
+    </section>
+
+    <section class="card">
+        <label class="switch">
+            <input type="checkbox" id="enabled">
+            <span>Enhance history diffs</span>
+        </label>
+
+        <div class="field">
+            <span class="label">Layout</span>
+            <div class="segmented" id="viewMode">
+                <button type="button" data-value="split">Side by side</button>
+                <button type="button" data-value="unified">Unified</button>
+            </div>
+        </div>
+
+        <div class="field">
+            <span class="label">Highlight granularity</span>
+            <div class="segmented" id="granularity">
+                <button type="button" data-value="word">Word</button>
+                <button type="button" data-value="char">Character</button>
+            </div>
+        </div>
+
+        <label class="switch">
+            <input type="checkbox" id="collapseUnchanged">
+            <span>Collapse unchanged lines</span>
+        </label>
+
+        <div class="field indent" id="context-field">
+            <label class="label" for="contextLines">Context lines</label>
+            <input type="number" id="contextLines" min="0" max="20" step="1">
+        </div>
+
+        <label class="switch">
+            <input type="checkbox" id="normalizeWhitespace">
+            <span>Ignore whitespace &amp; <code>&amp;nbsp;</code> noise</span>
+        </label>
+    </section>
+
+    <section class="card">
+        <div class="field">
+            <span class="label">Which fields</span>
+            <div class="segmented" id="fieldMode">
+                <button type="button" data-value="auto">Auto</button>
+                <button type="button" data-value="listed">Named only</button>
+            </div>
+        </div>
+        <p class="hint" id="fieldModeHint"></p>
+
+        <div class="field indent" id="minlength-field">
+            <label class="label" for="minLength">Min. length for auto</label>
+            <input type="number" id="minLength" min="0" max="5000" step="10">
+        </div>
+
+        <div class="field">
+            <label class="label" for="fieldNames">Field names (comma separated)</label>
+            <textarea id="fieldNames" rows="3" spellcheck="false"></textarea>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <button type="button" id="rescan" class="btn">Re-scan tab</button>
+        <button type="button" id="reset" class="btn btn-quiet">Reset defaults</button>
+        <span id="status" class="status" role="status"></span>
+    </footer>
+
+    <script src="../common/settings.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

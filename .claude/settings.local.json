@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(node tools/make-icons.js)",
+      "Bash(node --test test/)",
+      "Bash(node --test \"test/diff.test.mjs\")",
+      "Bash(node --check popup/popup.js)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('manifest.json','utf8'\\)\\)\")",
+      "Bash(npm test *)"
+    ]
+  }
+}

@@ -1,0 +1,388 @@
+/*!
+ * Jira Diff Highlighter (Server / Data Center)
+ * Widget styles. Everything is namespaced under .jdh* so it cannot leak into
+ * Jira's own AUI styling, and the few properties AUI likes to override
+ * (table cell padding, button chrome) are locked down explicitly.
+ */
+
+.jdh-hidden {
+    display: none !important;
+}
+
+.jdh [hidden],
+.jdh-restore[hidden] {
+    display: none !important;
+}
+
+td.jdh-host {
+    padding: 0 !important;
+    vertical-align: top !important;
+    background: transparent !important;
+}
+
+/* --------------------------------------------------------------------- *
+ * Theme tokens
+ * --------------------------------------------------------------------- */
+
+.jdh {
+    --jdh-border: #dfe1e6;
+    --jdh-bg: #ffffff;
+    --jdh-bg-subtle: #f4f5f7;
+    --jdh-text: #172b4d;
+    --jdh-text-muted: #6b778c;
+
+    --jdh-del-bg: #ffeceb;
+    --jdh-del-bg-strong: #ffc9c4;
+    --jdh-del-text: #ae2a19;
+    --jdh-del-gutter: #ffd7d3;
+
+    --jdh-ins-bg: #e7f9ef;
+    --jdh-ins-bg-strong: #a7edc0;
+    --jdh-ins-text: #1a6b3c;
+    --jdh-ins-gutter: #c9f0d8;
+
+    --jdh-accent: #0c66e4;
+    --jdh-filler: repeating-linear-gradient(
+        45deg,
+        rgba(9, 30, 66, 0.03),
+        rgba(9, 30, 66, 0.03) 6px,
+        transparent 6px,
+        transparent 12px
+    );
+
+    box-sizing: border-box;
+    margin: 2px 0 6px;
+    border: 1px solid var(--jdh-border);
+    border-radius: 5px;
+    background: var(--jdh-bg);
+    color: var(--jdh-text);
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.jdh *,
+.jdh *::before,
+.jdh *::after {
+    box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+    .jdh {
+        --jdh-border: #3c4657;
+        --jdh-bg: #1d2125;
+        --jdh-bg-subtle: #22272b;
+        --jdh-text: #c7d1db;
+        --jdh-text-muted: #8c9bab;
+
+        --jdh-del-bg: #3d2422;
+        --jdh-del-bg-strong: #6b2f28;
+        --jdh-del-text: #ff9c8f;
+        --jdh-del-gutter: #4d2a26;
+
+        --jdh-ins-bg: #1c3329;
+        --jdh-ins-bg-strong: #2a5c3f;
+        --jdh-ins-text: #7ee2b8;
+        --jdh-ins-gutter: #234034;
+
+        --jdh-accent: #579dff;
+        --jdh-filler: repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.03),
+            rgba(255, 255, 255, 0.03) 6px,
+            transparent 6px,
+            transparent 12px
+        );
+    }
+}
+
+/* --------------------------------------------------------------------- *
+ * Toolbar
+ * --------------------------------------------------------------------- */
+
+.jdh-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 5px 8px;
+    background: var(--jdh-bg-subtle);
+    border-bottom: 1px solid var(--jdh-border);
+}
+
+.jdh-field {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--jdh-text);
+}
+
+.jdh-spacer {
+    flex: 1 1 auto;
+}
+
+.jdh-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.jdh-badge--add {
+    background: var(--jdh-ins-bg-strong);
+    color: var(--jdh-ins-text);
+}
+
+.jdh-badge--del {
+    background: var(--jdh-del-bg-strong);
+    color: var(--jdh-del-text);
+}
+
+.jdh-badge--neutral {
+    background: transparent;
+    border: 1px dashed var(--jdh-border);
+    color: var(--jdh-text-muted);
+    font-weight: 400;
+}
+
+.jdh-btn,
+.jdh-expand,
+.jdh-restore {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    padding: 2px 8px;
+    border: 1px solid var(--jdh-border);
+    border-radius: 3px;
+    background: var(--jdh-bg);
+    color: var(--jdh-text);
+    font: inherit;
+    font-size: 11.5px;
+    line-height: 1.6;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.jdh-btn:hover,
+.jdh-expand:hover,
+.jdh-restore:hover {
+    background: var(--jdh-bg-subtle);
+    border-color: var(--jdh-accent);
+    color: var(--jdh-text);
+}
+
+.jdh-btn:focus-visible,
+.jdh-expand:focus-visible,
+.jdh-restore:focus-visible {
+    outline: 2px solid var(--jdh-accent);
+    outline-offset: 1px;
+}
+
+.jdh-segmented {
+    display: inline-flex;
+}
+
+.jdh-segmented .jdh-btn {
+    border-radius: 0;
+    margin-left: -1px;
+}
+
+.jdh-segmented .jdh-btn:first-child {
+    border-radius: 3px 0 0 3px;
+    margin-left: 0;
+}
+
+.jdh-segmented .jdh-btn:last-child {
+    border-radius: 0 3px 3px 0;
+}
+
+.jdh-btn.is-active {
+    background: var(--jdh-accent);
+    border-color: var(--jdh-accent);
+    color: #ffffff;
+    position: relative;
+    z-index: 1;
+}
+
+.jdh-btn.is-active:hover {
+    background: var(--jdh-accent);
+    color: #ffffff;
+}
+
+.jdh-restore {
+    display: inline-block;
+    margin-top: 6px;
+}
+
+/* --------------------------------------------------------------------- *
+ * Diff grid
+ * --------------------------------------------------------------------- */
+
+.jdh-viewport {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.jdh-grid {
+    display: grid;
+    width: 100%;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+        "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.jdh-grid--split {
+    grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
+}
+
+.jdh-grid--unified {
+    grid-template-columns: max-content max-content max-content minmax(0, 1fr);
+}
+
+.jdh-row {
+    display: contents;
+}
+
+.jdh-gutter,
+.jdh-sign {
+    padding: 1px 6px;
+    text-align: right;
+    color: var(--jdh-text-muted);
+    background: var(--jdh-bg-subtle);
+    border-right: 1px solid var(--jdh-border);
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+    -webkit-user-select: none;
+    min-width: 2.6em;
+}
+
+.jdh-sign {
+    text-align: center;
+    min-width: 1.6em;
+    font-weight: 700;
+}
+
+.jdh-code {
+    padding: 1px 8px;
+    min-height: 1.55em;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    tab-size: 4;
+}
+
+.jdh-code--old {
+    border-right: 1px solid var(--jdh-border);
+}
+
+.jdh-code--filler {
+    background-image: var(--jdh-filler);
+}
+
+/* --- split colouring ------------------------------------------------- */
+
+.jdh-row--del > .jdh-code--old,
+.jdh-row--replace > .jdh-code--old {
+    background-color: var(--jdh-del-bg);
+}
+
+.jdh-row--ins > .jdh-code--new,
+.jdh-row--replace > .jdh-code--new {
+    background-color: var(--jdh-ins-bg);
+}
+
+.jdh-grid--split .jdh-row--del > .jdh-gutter--old,
+.jdh-grid--split .jdh-row--replace > .jdh-gutter--old {
+    background: var(--jdh-del-gutter);
+    color: var(--jdh-del-text);
+}
+
+.jdh-grid--split .jdh-row--ins > .jdh-gutter--new,
+.jdh-grid--split .jdh-row--replace > .jdh-gutter--new {
+    background: var(--jdh-ins-gutter);
+    color: var(--jdh-ins-text);
+}
+
+/* --- unified colouring ----------------------------------------------- */
+
+.jdh-grid--unified .jdh-row--del > .jdh-code,
+.jdh-grid--unified .jdh-row--del > .jdh-sign {
+    background-color: var(--jdh-del-bg);
+    color: var(--jdh-del-text);
+}
+
+.jdh-grid--unified .jdh-row--ins > .jdh-code,
+.jdh-grid--unified .jdh-row--ins > .jdh-sign {
+    background-color: var(--jdh-ins-bg);
+    color: var(--jdh-ins-text);
+}
+
+.jdh-grid--unified .jdh-row--del > .jdh-gutter {
+    background: var(--jdh-del-gutter);
+}
+
+.jdh-grid--unified .jdh-row--ins > .jdh-gutter {
+    background: var(--jdh-ins-gutter);
+}
+
+/* --- word level marks ------------------------------------------------ */
+
+.jdh-mark {
+    border-radius: 2px;
+    padding: 0 1px;
+    text-decoration: none;
+}
+
+.jdh-mark--del {
+    background: var(--jdh-del-bg-strong);
+    color: var(--jdh-del-text);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    text-decoration-color: rgba(174, 42, 25, 0.5);
+}
+
+.jdh-mark--ins {
+    background: var(--jdh-ins-bg-strong);
+    color: var(--jdh-ins-text);
+    font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+    .jdh-mark--del {
+        text-decoration-color: rgba(255, 156, 143, 0.6);
+    }
+}
+
+/* --- collapsed regions ----------------------------------------------- */
+
+.jdh-skip {
+    padding: 3px 8px;
+    text-align: center;
+    background: var(--jdh-bg-subtle);
+    border-top: 1px solid var(--jdh-border);
+    border-bottom: 1px solid var(--jdh-border);
+}
+
+.jdh-expand {
+    color: var(--jdh-text-muted);
+    background: transparent;
+    border-style: dashed;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* --- print ------------------------------------------------------------ */
+
+@media print {
+    .jdh-toolbar,
+    .jdh-restore {
+        display: none !important;
+    }
+
+    .jdh-viewport {
+        max-height: none;
+        overflow: visible;
+    }
+}

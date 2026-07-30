@@ -29,6 +29,16 @@
         </label>
 
         <div class="field">
+            <label class="label" for="platform">Jira flavour</label>
+            <select id="platform">
+                <option value="auto">Auto-detect</option>
+                <option value="server">Server / Data Center</option>
+                <option value="cloud">Cloud (*.atlassian.net)</option>
+                <option value="both">Both</option>
+            </select>
+        </div>
+
+        <div class="field">
             <span class="label">Layout</span>
             <div class="segmented" id="viewMode">
                 <button type="button" data-value="split">Side by side</button>
@@ -83,7 +93,8 @@
 
     <footer class="footer">
         <button type="button" id="rescan" class="btn">Re-scan tab</button>
-        <button type="button" id="reset" class="btn btn-quiet">Reset defaults</button>
+        <button type="button" id="diagnose" class="btn" title="Copy a DOM report for this tab to the clipboard">Diagnose</button>
+        <button type="button" id="reset" class="btn btn-quiet">Reset</button>
         <span id="status" class="status" role="status"></span>
     </footer>
 

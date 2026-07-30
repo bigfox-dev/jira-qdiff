@@ -40,13 +40,15 @@
         return null;
     }
 
-    function walk(node, out, preformatted) {
+    function walk(node, out, ctx, preformatted) {
         if (node.nodeType === 3) {
-            // Jira emits "<br/>\n" for every newline in the stored value. In
-            // HTML a raw newline inside a text node is just whitespace, so only
-            // <br> and block elements may produce a line break — otherwise every
-            // break would be counted twice.
-            out.push(preformatted ? node.nodeValue : node.nodeValue.replace(/[\r\n]+/g, ' '));
+            // Server/DC emits "<br/>\n" for every newline in the stored value, so
+            // a raw newline in a text node is just HTML whitespace there and must
+            // not break the line — otherwise every break is counted twice.
+            // Cloud does the opposite: it hands over a plain-text blob whose real
+            // newlines are the only line breaks there are.
+            var keep = preformatted || ctx.textNewlines;
+            out.push(keep ? node.nodeValue : node.nodeValue.replace(/[\r\n]+/g, ' '));
             return;
         }
         if (node.nodeType !== 1) return;
@@ -64,35 +66,51 @@
             return;
         }
 
+        // Cloud renders rich text, so a bare list would collapse into one blob.
+        if (tag === 'li' && ctx.listMarkers) out.push('• ');
+
         var pre = preformatted || tag === 'pre';
         for (var i = 0; i < node.childNodes.length; i++) {
-            walk(node.childNodes[i], out, pre);
+            walk(node.childNodes[i], out, ctx, pre);
         }
 
         if (BLOCK_TAGS.has(tag)) out.push('\n');
     }
 
     /**
-     * @param {Element|null} td            .activity-old-val / .activity-new-val
-     * @param {{normalizeWhitespace?: boolean}} [options]
+     * Read any history value element down to plain text.
+     *
+     * @param {Element|null} element
+     * @param {{normalizeWhitespace?: boolean, textNewlines?: boolean,
+     *          listMarkers?: boolean, stripLabel?: boolean}} [options]
      * @returns {string}
      */
-    function cellToText(td, options) {
-        if (!td) return '';
+    function elementToText(element, options) {
+        if (!element) return '';
         var opts = options || {};
-        var clone = td.cloneNode(true);
+        var clone = element.cloneNode(true);
 
         // The bracketed raw value ("[ 18000 ]") is Jira internals, not content.
         clone.querySelectorAll('span.hist-value').forEach(function (n) {
             n.remove();
         });
 
-        var first = firstMeaningfulChild(clone);
-        if (isValueLabel(first)) first.remove();
+        if (opts.stripLabel !== false) {
+            var first = firstMeaningfulChild(clone);
+            if (isValueLabel(first)) first.remove();
+        }
 
         var parts = [];
-        walk(clone, parts, false);
+        walk(clone, parts, {
+            textNewlines: opts.textNewlines === true,
+            listMarkers: opts.listMarkers === true
+        }, false);
         return normalize(parts.join(''), opts.normalizeWhitespace !== false);
+    }
+
+    /** Server/DC change-history cell (.activity-old-val / .activity-new-val). */
+    function cellToText(td, options) {
+        return elementToText(td, options);
     }
 
     function normalize(text, collapseWhitespace) {
@@ -143,6 +161,7 @@
     }
 
     root.JDHExtract = {
+        elementToText: elementToText,
         cellToText: cellToText,
         readHistoryRow: readHistoryRow,
         normalize: normalize

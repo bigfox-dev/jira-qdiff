@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Jira Diff Highlighter — Cloud fixture</title>
+    <!--
+      REAL markup captured from eaaci.atlassian.net (Jira Cloud, July 2026),
+      trimmed to one item per history-item kind. Class names are Atlassian's
+      hashed ones and are kept verbatim on purpose: the adapter must not depend
+      on them, and leaving them in proves it doesn't.
+
+      Covered kinds:
+        generic  (Description ×2, Summary, Resolution, RemoteWorkItemLink, Sprint)
+        assignee (avatar inside the value)
+        transition (status lozenges)
+        time-changed (Remaining Estimate / Time Spent)
+        worklog  (no old/new pair at all — free text)
+        issue-created (no pair)
+    -->
+    <style>
+        body {
+            margin: 0;
+            padding: 16px;
+            background: #fff;
+            color: #172b4d;
+            font: 14px/1.42 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        ul[role="list"] { list-style: none; margin: 0; padding: 0; max-width: 1180px; }
+        li { border-bottom: 1px solid #dfe1e6; padding: 14px 0; }
+        /* Rough stand-ins for the hashed Atlassian utility classes we rely on. */
+        ._1e0c1txw { display: flex; }
+        ._19pku2gc { gap: 8px; }
+        ._1i4qfg65 > div { flex: 1 1 0; min-width: 0; }
+        ._1reo1wug, ._syaz1rpy { white-space: pre-wrap; font-size: 13px; }
+        ._19pkidpf._1kt9bjq5 { flex: 0 0 12px; }
+        ._19pkidpf._1kt9bjq5::before { content: "→"; color: #7a869a; }
+        .css-8wpm2n { color: #44546f; font-size: 13px; margin-bottom: 8px; }
+        ._k48p1wq8 { color: #172b4d; font-weight: 600; }
+        .css-a01qur { color: #6b778c; font-size: 12px; }
+        img { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; }
+        h2.demo { font-size: 15px; margin: 0 0 12px; }
+    </style>
+    <link rel="stylesheet" href="../content/styles.css">
+    <script>
+        window.JDH_TEST_SETTINGS = { viewMode: 'split', platform: 'cloud' };
+    </script>
+</head>
+<body>
+<h2 class="demo">Offline fixture — Jira Cloud activity / history (real markup)</h2>
+
+<div data-testid="history.feed-container" class="_19pk1ejb _2hwxidpf _otyr1ejb _18u0idpf"><ul class="css-1vvlv7l" role="list">
+
+<li><div data-testid="issue-history.ui.history-items.assignee-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.assignee-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.assignee-history-item.history-item--avatar" class="_12ji1r31"><span data-testid="issue-history.ui.history-items.assignee-history-item.history-item--avatar--inner" class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.assignee-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about Automation for Jira"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">Automation for Jira</span></div></span></div></div>changed the <span class="_k48p1wq8">Assignee</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 21, 2026 at 1:59 PM</span></div></div></div><div class="_1e0c1txw _4cvr1h6o _19pku2gc _syazazsu _1i4qfg65"><div class="_syazi7uo _p12f1ssb"><div class="_1e0c1txw _4cvr1h6o"><div class="_4t3i14no _2hwxu2gc"><div data-testid="issue-history.ui.history-items.history-item.assignee-history-item.assignee.assignee-avatar" class="_12ji1r31"><span data-testid="issue-history.ui.history-items.history-item.assignee-history-item.assignee.assignee-avatar--inner" class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div><div>Veronika Havlátová</div></div></div><div class="_19pkidpf _2hwxu2gc _otyridpf _18u0u2gc _cfu11ule _1kt9bjq5"></div><div class="_syazi7uo _p12f1ssb"><span class="_syaz1rpy">Unassigned</span></div></div></div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.transition-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.transition-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.transition-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.transition-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about david.juracek"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">david.juracek</span></div></span></div></div>changed the <span class="_k48p1wq8">Status</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 21, 2026 at 1:59 PM</span></div></div></div><div class="_1e0c1txw _4cvr1h6o _19pku2gc _syazazsu _1i4qfg65"><div class="_syazi7uo _p12f1ssb"><span data-testid="common-components-status-lozenge.status-lozenge" class="_2rkofajl"><span data-testid="common-components-status-lozenge.status-lozenge--text" class="_1reo15vq">Testing</span></span></div><div class="_19pkidpf _2hwxu2gc _otyridpf _18u0u2gc _cfu11ule _1kt9bjq5"></div><div class="_syazi7uo _p12f1ssb"><span data-testid="common-components-status-lozenge.status-lozenge" class="_2rkofajl"><span data-testid="common-components-status-lozenge.status-lozenge--text" class="_1reo15vq">Done</span></span></div></div></div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.generic-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about david.juracek"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">david.juracek</span></div></span></div></div>updated the <span class="_k48p1wq8">Resolution</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 21, 2026 at 1:59 PM</span></div></div></div><div class="_1e0c1txw _4cvr1h6o _19pku2gc _syazazsu _1i4qfg65"><div class="_syazi7uo _p12f1ssb"><span class="_syaz1rpy">None</span></div><div class="_19pkidpf _2hwxu2gc _otyridpf _18u0u2gc _cfu11ule _1kt9bjq5"></div><div class="_syazi7uo _p12f1ssb"><span class="_1reo1wug">Done</span></div></div></div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.worklog-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.worklog-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.worklog-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.worklog-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about Michal Zavadil"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">Michal Zavadil</span></div></span></div></div>logged <span class="_k48p1wq8">4h 45m</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 3, 2026 at 10:10 AM</span></div></div></div>* https://eaaci.atlassian.net/browse/DS-2837#icft=DS-2837:
+* Discusion
+* New endpoint implementation
+* Add new test scenarios
+toggl-id:4465837475</div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.time-changed-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.time-changed-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.time-changed-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.time-changed-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about Michal Zavadil"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">Michal Zavadil</span></div></span></div></div>updated the <span class="_k48p1wq8">Remaining Estimate</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 3, 2026 at 10:10 AM</span></div></div></div><div class="_1e0c1txw _4cvr1h6o _19pku2gc _syazazsu _1i4qfg65"><div class="_syazi7uo _p12f1ssb"><span class="_2rkofajl"><span class="_1reo15vq">0m</span></span></div><div class="_19pkidpf _2hwxu2gc _otyridpf _18u0u2gc _cfu11ule _1kt9bjq5"></div><div class="_syazi7uo _p12f1ssb"><span class="_2rkofajl"><span class="_1reo15vq">0m</span></span></div></div></div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.generic-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about Michal Zavadil"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">Michal Zavadil</span></div></span></div></div>updated the <span class="_k48p1wq8">Description</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 1, 2026 at 4:43 PM</span></div></div></div><div class="_1e0c1txw _4cvr1h6o _19pku2gc _syazazsu _1i4qfg65"><div class="_syazi7uo _p12f1ssb"><span class="_1reo1wug">h2. Story
+
+We need new endpoint to get for the *logged in user* data about what positions he was elected for.
+
+h2. Acceptance Criteria
+
+# New endpoint, for example: /api/v1/electionCandidates/{contactId}
+# For the *logged in* user, returns array of Election candidate entities for the contact where *Elected = Yes*
+# The electedTerm is comprised of the _Elected From_&nbsp;and _Elected To_&nbsp;fields on the parent Election record.
+
+
+
+h3. EXAMPLE
+
+
+
+{{{}}
+
+{{      [}}
+
+{{           {}}
+
+{{                  electedTerm: “2026-2028”,}}
+
+{{                  electedPosition: “JM Assembly IG Drug Allergy”}}
+
+{{            },}}
+
+{{      ]}}
+
+{{}}}
+
+&nbsp;
+
+h2. Documentation
+
+A new login-protected endpoint has been added:
+
+{noformat}GET /api/v1/electionCandidates/current/electedPositions{noformat}
+
+It returns information as requested, with the only differences:
+
+* Returned elected positions collection is named {{data}} to be consistent with the rest of the BE API.
+* And the division of {{electedTerm}} into two separate start and end fields. Because the only the Presentation layer (meaning FE) takes care of how it should be displayed. For example, whether there should be a gap between the dividers or not, etc. *2000-2005* vs *2000 - 2005*.
+
+{noformat}{
+    "data": [
+        {
+            "candidateId": "bde405d5-8409-f011-bae3-7c1e52fb54da",
+            "electedPosition": "Elected Position",
+            "electedTermStartYear": 2003,
+            "electedTermEndYear": 2005
+        }
+    ]
+}{noformat}</span></div><div class="_19pkidpf _2hwxu2gc _otyridpf _18u0u2gc _cfu11ule _1kt9bjq5"></div><div class="_syazi7uo _p12f1ssb"><span class="_1reo1wug">h2. Story
+
+We need new endpoint to get for the *logged in user* data about what positions he was elected for.
+
+h2. Acceptance Criteria
+
+# New endpoint, for example: /api/v1/electionCandidates/{contactId}
+# For the *logged in* user, returns array of Election candidate entities for the contact where *Elected = Yes*
+# The electedTerm is comprised of the _Elected From_&nbsp;and _Elected To_&nbsp;fields on the parent Election record.
+
+
+
+h3. EXAMPLE
+
+
+
+{{{}}
+
+{{      [}}
+
+{{           {}}
+
+{{                  electedTerm: “2026-2028”,}}
+
+{{                  electedPosition: “JM Assembly IG Drug Allergy”}}
+
+{{            },}}
+
+{{      ]}}
+
+{{}}}
+
+&nbsp;
+
+h2. Documentation
+
+A new login-protected endpoint has been added:
+
+{noformat}GET /api/v1/electionCandidates/current/electedPositions{noformat}
+
+It returns information as requested, with the only differences:
+
+* Returned elected positions collection is named {{data}} to be consistent with the rest of the BE API.
+* And the division of {{electedTerm}} into two separate start and end fields. Because how it should be displayed is the responsibility of the present layer - FE. For example, whether there should be a gap between the dividers or not, etc. *2000-2005* vs *2000 - 2005*.
+
+{noformat}{
+    "data": [
+        {
+            "candidateId": "bde405d5-8409-f011-bae3-7c1e52fb54da",
+            "electedPosition": "Elected Position",
+            "electedTermStartYear": 2003,
+            "electedTermEndYear": 2005
+        }
+    ]
+}{noformat}</span></div></div></div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.generic-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about Michal Zavadil"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">Michal Zavadil</span></div></span></div></div>updated the <span class="_k48p1wq8">Summary</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 1, 2026 at 12:52 PM</span></div></div></div><div class="_1e0c1txw _4cvr1h6o _19pku2gc _syazazsu _1i4qfg65"><div class="_syazi7uo _p12f1ssb"><span class="_1reo1wug">electionCandidates</span></div><div class="_19pkidpf _2hwxu2gc _otyridpf _18u0u2gc _cfu11ule _1kt9bjq5"></div><div class="_syazi7uo _p12f1ssb"><span class="_1reo1wug">BE - Add new electionCandidates - elected positions API</span></div></div></div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.generic-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.generic-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.generic-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about Michal Zavadil"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">Michal Zavadil</span></div></span></div></div>updated the <span class="_k48p1wq8">RemoteWorkItemLink</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">July 1, 2026 at 12:20 PM</span></div></div></div><div class="_1e0c1txw _4cvr1h6o _19pku2gc _syazazsu _1i4qfg65"><div class="_syazi7uo _p12f1ssb"><span class="_syaz1rpy">None</span></div><div class="_19pkidpf _2hwxu2gc _otyridpf _18u0u2gc _cfu11ule _1kt9bjq5"></div><div class="_syazi7uo _p12f1ssb"><span class="_1reo1wug">This work item links to "PR: https://dev.azure.com/eaaci/EAACI-Portal/_git/d365-middleware/pullrequest/2078 (Web Link)"</span></div></div></div></div></li>
+
+<li><div data-testid="issue-history.ui.history-items.issue-created-history-item.history-item" class="_19pku2gc _2hwxidpf _otyrxy5q _18u0idpf _1e0c1txw"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.issue-created-history-item.history-item--avatar-trigger-container" role="button" tabindex="-1" aria-hidden="true"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><div class="_4t3i14no _2hwxu2gc _1bsb14no _1e0c1txw _4cvr1h6o _1bah1h6o"><div data-testid="issue-history.ui.history-items.issue-created-history-item.history-item--avatar" class="_12ji1r31"><span class="_vchh18uv"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" aria-hidden="true"></span></div></div></div></span></div><div class="_16jlkb7n _1wpz1h6o _1bsb2mt8"><div class="css-10h0c2g"><div class="css-8wpm2n"><div class="css-hr6aor"><div data-vc="profilecard-wrapper" class="_p12f1osq _syazazsu"><span aria-expanded="false" aria-haspopup="true" data-testid="issue-history.ui.history-items.issue-created-history-item.history-item--name-trigger-container" role="button" tabindex="0" aria-label="More information about Josef Vaculík"><div data-testid="profilecard-next.ui.profilecard.profilecard-trigger"><span class="css-13xi2s2">Josef Vaculík</span></div></span></div></div>created the <span class="_k48p1wq8">Work item</span></div><div class="css-a01qur"><div class="css-1upjdpy"><span aria-hidden="false" role="presentation" class="_80om73ad _syazazsu">June 30, 2026 at 1:23 PM</span></div></div></div></div></div></li>
+
+</ul></div>
+
+<div id="selfcheck" style="max-width:1180px;margin:20px auto;padding:12px;border-radius:6px;font:13px/1.5 ui-monospace,Consolas,monospace"></div>
+
+<script src="../common/settings.js"></script>
+<script src="../content/diff.js"></script>
+<script src="../content/extract.js"></script>
+<script src="../content/render.js"></script>
+<script src="../content/adapters.js"></script>
+<script src="../content/content.js"></script>
+<script>
+/*
+ * Self-check. The Cloud adapter reads a DOM nobody documents, so this fixture
+ * asserts its own expected outcome — if Atlassian reshuffles the markup and you
+ * paste in a fresh capture, the failures show up here instead of silently.
+ */
+setTimeout(function () {
+    var results = [];
+    function check(name, actual, expected) {
+        var a = JSON.stringify(actual);
+        var e = JSON.stringify(expected);
+        results.push({ name: name, pass: a === e, actual: a, expected: e });
+    }
+
+    var items = JDHAdapters.findHistoryItems();
+    var fields = items.map(function (item) {
+        var pair = JDHAdapters.findPairIn(item);
+        return JDHAdapters.fieldFromHeader(
+            JDHAdapters.findHeader(item, pair && pair.container)
+        );
+    });
+    var widgets = [].slice.call(document.querySelectorAll('.jdh'));
+
+    check('history items found', items.length, 9);
+    check('field names read from the header', fields, [
+        'Assignee', 'Status', 'Resolution', '4h 45m', 'Remaining Estimate',
+        'Description', 'Summary', 'RemoteWorkItemLink', 'Work item'
+    ]);
+    check('items with an old/new pair',
+        items.filter(function (i) { return !!JDHAdapters.findPairIn(i); }).length, 7);
+    check('widgets rendered', widgets.map(function (w) {
+        return w.querySelector('.jdh-field').textContent;
+    }), ['Description', 'Summary', 'RemoteWorkItemLink']);
+    check('short changes left alone',
+        document.querySelectorAll('[data-jdh-state="skipped"]').length, 4);
+    check('originals hidden', document.querySelectorAll('.jdh-hidden').length, 3);
+    check('nothing failed', document.querySelectorAll('[data-jdh-state="failed"]').length, 0);
+
+    var descr = widgets.filter(function (w) {
+        return w.querySelector('.jdh-field').textContent === 'Description';
+    })[0];
+    check('description diff is one changed line',
+        descr.querySelectorAll('.jdh-row--replace').length, 1);
+    check('unchanged bulk collapsed',
+        descr.querySelectorAll('.jdh-row--skip').length > 0, true);
+
+    var failed = results.filter(function (r) { return !r.pass; });
+    var box = document.getElementById('selfcheck');
+    box.style.background = failed.length ? '#ffeceb' : '#e7f9ef';
+    box.style.border = '1px solid ' + (failed.length ? '#ae2a19' : '#1a6b3c');
+    box.style.color = failed.length ? '#ae2a19' : '#1a6b3c';
+    box.textContent = failed.length
+        ? 'SELF-CHECK FAILED (' + failed.length + '/' + results.length + ')'
+        : 'SELF-CHECK PASSED (' + results.length + '/' + results.length + ')';
+    results.forEach(function (r) {
+        var line = document.createElement('div');
+        line.textContent = (r.pass ? '  ok  ' : '  FAIL ') + r.name +
+            (r.pass ? '' : '  expected ' + r.expected + ', got ' + r.actual);
+        box.appendChild(line);
+    });
+}, 600);
+</script>
+</body>
+</html>

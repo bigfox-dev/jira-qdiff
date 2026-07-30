@@ -22,6 +22,7 @@ const CONTENT_JS = [
     'content/diff.js',
     'content/extract.js',
     'content/render.js',
+    'content/adapters.js',
     'content/content.js'
 ];
 const CONTENT_CSS = ['content/styles.css'];

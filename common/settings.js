@@ -23,6 +23,14 @@
         contextLines: 3,
         /** Treat &nbsp;/indentation noise as insignificant. */
         normalizeWhitespace: true,
+        /**
+         * Which platform adapter to run.
+         * 'auto'   — hostname decides (*.atlassian.net = Cloud), with a fallback
+         * 'server' — on-premise Server / Data Center only
+         * 'cloud'  — Cloud only
+         * 'both'   — run both, for proxies that mix the two
+         */
+        platform: 'auto',
         /** 'auto' = long or multi-line values, 'listed' = only fieldNames. */
         fieldMode: 'auto',
         fieldNames: [

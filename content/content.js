@@ -1,15 +1,11 @@
 /*!
- * Jira Diff Highlighter (Server / Data Center)
+ * Jira Diff Highlighter
  * ------------------------------------------------
- * Finds Jira Server/DC change-history rows and swaps the two plain
- * "Original / New" cells for a real diff widget.
+ * Orchestration: ask the platform adapters for change records, run every one
+ * that is worth diffing through the shared renderer, and keep doing that as
+ * Jira swaps the activity feed around.
  *
- * Target markup (unchanged since Jira 7.x):
- *   #issue_actions_container
- *     .issue-data-block#changehistory-<id>
- *       .changehistory.action-body
- *         table#changehistory_<id>
- *           tr > td.activity-name + td.activity-old-val + td.activity-new-val
+ * Nothing here knows Server markup from Cloud markup — see content/adapters.js.
  */
 (function (root) {
     'use strict';
@@ -17,7 +13,6 @@
     if (root.__jiraDiffHighlighterLoaded) return;
     root.__jiraDiffHighlighterLoaded = true;
 
-    var TABLE_SELECTOR = 'table[id^="changehistory_"], .changehistory table';
     var STATE_ATTR = 'jdhState';
     var DEBOUNCE_MS = 180;
 
@@ -30,53 +25,39 @@
      * Field selection
      * ------------------------------------------------------------------ */
 
-    function matchesFieldList(name) {
-        var lower = name.toLowerCase();
+    function matchesFieldList(text) {
+        var lower = (text || '').toLowerCase();
+        if (!lower) return false;
         return settings.fieldNames.some(function (needle) {
             return needle && lower.indexOf(needle.toLowerCase()) !== -1;
         });
     }
 
-    function shouldEnhance(data) {
-        var combined = data.oldText.length + data.newText.length;
+    function shouldEnhance(target) {
+        var combined = target.oldText.length + target.newText.length;
         if (!combined) return false;
         if (combined > settings.maxChars) return false;
 
-        if (matchesFieldList(data.name)) return true;
+        if (matchesFieldList(target.matchText || target.fieldName)) return true;
         if (settings.fieldMode === 'listed') return false;
 
-        var multiline = data.oldText.indexOf('\n') !== -1 || data.newText.indexOf('\n') !== -1;
+        var multiline = target.oldText.indexOf('\n') !== -1 ||
+            target.newText.indexOf('\n') !== -1;
         return multiline || combined >= settings.minLength;
     }
 
     /* ------------------------------------------------------------------ *
-     * Enhancing a single history row
+     * Enhancing one change record
      * ------------------------------------------------------------------ */
 
-    function enhanceRow(tr) {
-        if (tr.dataset[STATE_ATTR]) return;
+    function enhance(target) {
+        var node = target.node;
+        if (node.dataset[STATE_ATTR]) return;
 
-        var data;
-        try {
-            data = root.JDHExtract.readHistoryRow(tr, settings);
-        } catch (err) {
-            console.warn('[jira-diff] could not read history row', err);
+        if (!shouldEnhance(target)) {
+            node.dataset[STATE_ATTR] = 'skipped';
             return;
         }
-        if (!data) return;
-
-        if (!shouldEnhance(data)) {
-            tr.dataset[STATE_ATTR] = 'skipped';
-            return;
-        }
-
-        var cells = [data.oldCell, data.newCell].filter(Boolean);
-        var anchor = cells[0];
-        if (!anchor || !anchor.parentNode) return;
-
-        var host = document.createElement('td');
-        host.className = 'jdh-host';
-        host.colSpan = cells.length;
 
         var restore = document.createElement('button');
         restore.type = 'button';
@@ -85,25 +66,19 @@
         restore.title = 'Switch back to the highlighted diff';
         restore.hidden = true;
 
-        var showingOriginal = false;
-        function setOriginalVisible(visible) {
-            showingOriginal = visible;
-            host.hidden = visible;
-            restore.hidden = !visible;
-            cells.forEach(function (cell) {
-                cell.classList.toggle('jdh-hidden', !visible);
-            });
-        }
+        var handle = null;
         restore.addEventListener('click', function (event) {
             event.preventDefault();
-            setOriginalVisible(false);
+            if (handle) handle.setOriginalVisible(false);
         });
 
         var widget;
         try {
-            widget = root.JDHRender.build(data.oldText, data.newText, settings, {
-                fieldName: data.name,
-                onToggleOriginal: function () { setOriginalVisible(true); },
+            widget = root.JDHRender.build(target.oldText, target.newText, settings, {
+                fieldName: target.fieldName,
+                onToggleOriginal: function () {
+                    if (handle) handle.setOriginalVisible(true);
+                },
                 onViewChange: function (mode) {
                     if (typeof chrome !== 'undefined' && chrome.storage) {
                         root.JDHSettings.save({ viewMode: mode });
@@ -112,37 +87,33 @@
             });
         } catch (err) {
             console.warn('[jira-diff] diff failed, leaving Jira markup intact', err);
-            tr.dataset[STATE_ATTR] = 'failed';
+            node.dataset[STATE_ATTR] = 'failed';
             return;
         }
 
-        host.appendChild(widget.element);
-        anchor.parentNode.insertBefore(host, anchor);
+        handle = target.mount(widget.element, restore);
+        if (!handle) {
+            node.dataset[STATE_ATTR] = 'failed';
+            return;
+        }
 
-        var restoreSlot = tr.querySelector('td.activity-name') || host;
-        restoreSlot.appendChild(restore);
-
-        setOriginalVisible(false);
-        tr.dataset[STATE_ATTR] = 'enhanced';
-
-        enhancements.push({
-            tr: tr,
-            host: host,
-            restore: restore,
-            cells: cells
-        });
+        handle.setOriginalVisible(false);
+        node.dataset[STATE_ATTR] = 'enhanced';
+        enhancements.push({ node: node, handle: handle });
     }
 
     function teardown() {
         enhancements.forEach(function (item) {
-            if (item.host.parentNode) item.host.remove();
-            if (item.restore.parentNode) item.restore.remove();
-            item.cells.forEach(function (cell) { cell.classList.remove('jdh-hidden'); });
-            delete item.tr.dataset[STATE_ATTR];
+            try {
+                item.handle.detach();
+            } catch (err) {
+                console.warn('[jira-diff] could not detach widget', err);
+            }
+            delete item.node.dataset[STATE_ATTR];
         });
         enhancements = [];
-        document.querySelectorAll('tr[data-jdh-state]').forEach(function (tr) {
-            delete tr.dataset[STATE_ATTR];
+        document.querySelectorAll('[data-jdh-state]').forEach(function (node) {
+            delete node.dataset[STATE_ATTR];
         });
     }
 
@@ -154,11 +125,15 @@
         if (!settings.enabled) return;
         suppressObserver = true;
         try {
-            document.querySelectorAll(TABLE_SELECTOR).forEach(function (table) {
-                table.querySelectorAll('tr').forEach(function (tr) {
-                    if (!tr.querySelector('td.activity-old-val, td.activity-new-val')) return;
-                    enhanceRow(tr);
-                });
+            root.JDHAdapters.selectAdapters(settings.platform).forEach(function (adapter) {
+                var targets;
+                try {
+                    targets = adapter.collect(settings);
+                } catch (err) {
+                    console.warn('[jira-diff] adapter "' + adapter.id + '" failed', err);
+                    return;
+                }
+                targets.forEach(enhance);
             });
         } finally {
             suppressObserver = false;
@@ -208,6 +183,76 @@
     }
 
     /* ------------------------------------------------------------------ *
+     * Diagnostics
+     *
+     * Cloud markup is generated and undocumented, so when the heuristic misses
+     * this is what tells you why. Run  JDHContent.diagnose()  in the console on
+     * the History tab.
+     * ------------------------------------------------------------------ */
+
+    function diagnose() {
+        var Adapters = root.JDHAdapters;
+        var items = Adapters.findHistoryItems();
+        var scopes = Adapters.findScopes();
+
+        var report = {
+            host: location.hostname,
+            detectedPlatform: Adapters.detectPlatform(),
+            platformSetting: settings.platform,
+            adapters: Adapters.selectAdapters(settings.platform).map(function (a) { return a.id; }),
+            serverTables: document.querySelectorAll('table[id^="changehistory_"]').length,
+            cloudHistoryItems: items.length,
+            activityScopes: scopes.slice(0, 5).map(function (el) {
+                return {
+                    tag: el.tagName.toLowerCase(),
+                    testid: el.getAttribute('data-testid') || el.getAttribute('data-test-id') || null,
+                    id: el.id || null
+                };
+            }),
+            enhanced: enhancements.length,
+            states: {}
+        };
+
+        document.querySelectorAll('[data-jdh-state]').forEach(function (node) {
+            var state = node.dataset[STATE_ATTR];
+            report.states[state] = (report.states[state] || 0) + 1;
+        });
+
+        // Per history item: what was found, and what the field filter made of it.
+        report.items = items.slice(0, 40).map(function (item) {
+            var pair = Adapters.findPairIn(item);
+            var header = Adapters.findHeader(item, pair && pair.container);
+            var entry = {
+                testid: (item.getAttribute('data-testid') || '')
+                    .replace('issue-history.ui.history-items.', ''),
+                field: Adapters.fieldFromHeader(header) || null,
+                foundPair: !!pair,
+                state: pair ? (pair.container.dataset[STATE_ATTR] || 'unseen') : null
+            };
+            if (pair) {
+                var options = {
+                    normalizeWhitespace: settings.normalizeWhitespace,
+                    textNewlines: true,
+                    listMarkers: true,
+                    stripLabel: false
+                };
+                entry.oldLength = root.JDHExtract.elementToText(pair.oldNode, options).length;
+                entry.newLength = root.JDHExtract.elementToText(pair.newNode, options).length;
+            } else {
+                // No pair: say what the shape actually looked like.
+                entry.childCounts = Array.prototype.map.call(
+                    item.querySelectorAll('div'),
+                    function (d) { return d.childElementCount; }
+                ).filter(function (n) { return n === 3; }).length;
+            }
+            return entry;
+        });
+
+        console.log('[jira-diff] diagnostics', report);
+        return report;
+    }
+
+    /* ------------------------------------------------------------------ *
      * Boot
      * ------------------------------------------------------------------ */
 
@@ -220,6 +265,7 @@
     root.JDHContent = {
         rescan: function () { teardown(); scan(); },
         teardown: teardown,
+        diagnose: diagnose,
         getSettings: function () { return settings; },
         applySettings: applySettings
     };
@@ -235,9 +281,15 @@
 
         if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
             chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-                if (!message || message.type !== 'jdh:rescan') return;
-                root.JDHContent.rescan();
-                sendResponse({ ok: true, enhanced: enhancements.length });
+                if (!message) return;
+                if (message.type === 'jdh:rescan') {
+                    root.JDHContent.rescan();
+                    sendResponse({ ok: true, enhanced: enhancements.length });
+                    return;
+                }
+                if (message.type === 'jdh:diagnose') {
+                    sendResponse({ ok: true, report: diagnose() });
+                }
             });
         }
     }

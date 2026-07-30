@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Jira Diff Highlighter (Server / Data Center)",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Readable, colour-coded diffs for Description and other text fields on the History tab of on-premise Jira (Server / Data Center).",
     "permissions": [
         "storage",

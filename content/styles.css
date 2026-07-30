@@ -20,6 +20,15 @@ td.jdh-host {
     background: transparent !important;
 }
 
+/* Cloud mounts into a plain <div> next to the record it replaces. */
+.jdh-host--cloud {
+    margin: 4px 0 10px;
+}
+
+.jdh-host--cloud > .jdh-restore {
+    margin-top: 6px;
+}
+
 /* --------------------------------------------------------------------- *
  * Theme tokens
  * --------------------------------------------------------------------- */

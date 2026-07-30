@@ -4,7 +4,9 @@ Rozšíření pro **Chrome i Firefox** (MV3), které na záložce **History** v 
 tasku nahradí Jiřin plochý výpis „Original / New“ skutečným barevným diffem —
 dvousloupcovým nebo sjednoceným, se zvýrazněním na úrovni slov.
 
-Cílí na **on-premise Jiru (Server / Data Center)**.
+Funguje na **on-premise Jiře (Server / Data Center)** i na **Jira Cloud**
+(`*.atlassian.net`). Obě platformy mají úplně jiný DOM, ale widget i vzhled jsou
+sdílené — liší se jen adaptér, který změnu v DOM najde.
 
 
 ---
@@ -39,7 +41,7 @@ v Chrome; pro Firefox (a pro balíčky k distribuci) se buildí:
 
 ```bash
 npm run build          # -> dist/chrome/ a dist/firefox/
-npm run build:zip      # + dist/chrome-1.0.0.zip, dist/firefox-1.0.0.zip
+npm run build:zip      # + dist/chrome-1.1.0.zip, dist/firefox-1.1.0.zip
 ```
 
 ### Chrome / Edge
@@ -58,7 +60,7 @@ npm run build:zip      # + dist/chrome-1.0.0.zip, dist/firefox-1.0.0.zip
 
 Dočasný add-on zmizí při restartu prohlížeče. Pro trvalou instalaci potřebuješ
 podepsaný XPI z [addons.mozilla.org](https://addons.mozilla.org/developers/)
-(nahraj `dist/firefox-1.0.0.zip`, klidně jako *unlisted* — dostaneš podepsaný
+(nahraj `dist/firefox-1.1.0.zip`, klidně jako *unlisted* — dostaneš podepsaný
 XPI jen pro sebe), nebo Firefox Developer Edition / ESR s
 `xpinstall.signatures.required=false` v `about:config`.
 
@@ -83,6 +85,7 @@ i samotné oprávnění).
 | Volba | Výchozí | Popis |
 |---|---|---|
 | Enhance history diffs | zapnuto | Hlavní vypínač. |
+| Jira flavour | Auto-detect | Který adaptér běží. *Auto* rozhoduje podle hostname; přepni ručně, pokud máš Cloud za vlastní doménou nebo on-prem na `atlassian.*`. |
 | Layout | Side by side | Dvousloupcový vs. sjednocený pohled. |
 | Highlight granularity | Word | Zvýraznění po slovech nebo po znacích. |
 | Collapse unchanged lines | zapnuto | Sbalování nezměněných úseků. |
@@ -105,9 +108,10 @@ background.js          registrace/odregistrace content scriptů podle oprávněn
 common/settings.js     sdílené defaulty + storage vrstva (popup i content)
 content/
   diff.js              Myers O(ND) + patience anchory, word/char tokenizer
-  extract.js           Jira <td> -> čistý text (labely, hist-value, <br/>, &nbsp;)
+  extract.js           DOM -> čistý text (labely, hist-value, <br/>, &nbsp;, seznamy)
   render.js            model řádků, sbalování, CSS grid, lišta widgetu
-  content.js           hledání řádků historie, MutationObserver, přepínání
+  adapters.js          hledání změn: Server/DC tabulka + Cloud heuristika
+  content.js           orchestrace, MutationObserver, přepínání, diagnostika
   styles.css           vzhled widgetu (světlý/tmavý)
 popup/                 popup UI
 tools/
@@ -116,9 +120,66 @@ tools/
   serve.js             statický server pro offline fixture
 test/
   fixture.html         reálná on-prem HTML struktura pro ruční kontrolu
+  fixture-cloud.html   odvozená Cloud struktura pro ruční kontrolu
   diff.test.mjs        unit testy diff enginu
   background.test.mjs  background proti falešným API obou prohlížečů
+  adapters.test.mjs    routing platforem + parsování Cloud labelu
 ```
+
+### Jak se najde změna na každé platformě
+
+**Server / Data Center** — přesný selektor, markup je stabilní od Jiry 7.x:
+
+```
+table#changehistory_<id>
+  tr > td.activity-name + td.activity-old-val + td.activity-new-val
+```
+
+**Cloud** — generovaný React DOM. Všechny prezentační třídy jsou hashované
+(`_19pku2gc`), takže na ně nejde sáhnout; `data-testid` ale sémantické jsou:
+
+```
+div[data-testid="history.feed-container"]
+  ul > li
+    div[data-testid="issue-history.ui.history-items.<druh>-history-item.history-item"]
+      div[data-vc="profilecard-wrapper"]     avatar autora
+      div                                    obsahový sloupec
+        div > div                            hlavička:
+          div > [profilecard-wrapper]          jméno autora
+          "updated the "                       spojovací text
+          span                                 NÁZEV POLE
+        div                                  časové razítko
+        div                                  ← dvojice, právě 3 potomci:
+          div  stará hodnota
+          div  (prázdný — šipka je v CSS)
+          div  nová hodnota
+```
+
+Adaptér nejdřív zúží hledání přes `data-testid`, pak dvojici **potvrdí podle
+tvaru** (3 potomci, prostřední bez textu). Tvarová kontrola je pojistka pro
+případ, že Atlassian testid přejmenuje. Název pole se čte jako poslední listový
+`<span>` hlavičky — funguje to i na custom pole (`RemoteWorkItemLink`) a
+v jakémkoli jazyce, bez seznamu klíčových slov.
+
+Rozdíl je i ve čtení textu: Server posílá `<br/>` **a** skutečný newline (takže
+newline v textu se musí ignorovat), zatímco Cloud předává plain-text blob, kde
+skutečné newliny jsou jediné zalomení. Řeší to přepínač `textNewlines`
+v `extract.js`.
+
+### Když to na Cloudu nefunguje
+
+Content scripty běží v izolovaném světě, takže **`JDHContent` z konzole stránky
+nevidíš** — `JDHContent.diagnose()` tam skončí na `ReferenceError`. Použij
+místo toho tlačítko **Diagnose** v popupu: zkopíruje report do schránky
+(a vypíše ho do konzole popupu — otevřeš ji pravým tlačítkem na popupu →
+*Inspect*).
+
+Report obsahuje detekovanou platformu, počet nalezených history items a pro
+každou z nich přečtený název pole, jestli se našla dvojice a co s ní filtr
+polí udělal.
+
+Alternativně jde v DevTools přepnout kontext konzole (rozbalovátko vedle
+*top*) na *Jira Diff Highlighter* — tam `JDHContent.diagnose()` funguje.
 
 ### Proč vlastní diff engine
 
@@ -148,8 +209,17 @@ zvýrazňovat nemají):
 node tools/serve.js
 ```
 
-pak otevři `http://localhost:4173/test/fixture.html`. Fixture načítá stejné
+pak otevři `http://localhost:4173/test/fixture.html` (on-prem) nebo
+`http://localhost:4173/test/fixture-cloud.html` (Cloud). Fixtury načítají stejné
 skripty jako rozšíření; `chrome.*` API se automaticky obchází (`JDH_TEST_SETTINGS`).
+
+Obě fixtury jsou doslovné kopie reálného HTML (on-prem Jira Server, resp.
+Jira Cloud z `*.atlassian.net`) včetně hashovaných tříd — ty tam jsou schválně,
+aby bylo vidět, že na nich adaptér nestojí.
+
+Cloud fixture se navíc **kontroluje sama**: dole vypíše zelený `SELF-CHECK
+PASSED` nebo červený seznam toho, co nesedí. Když Atlassian markup změní, stačí
+do fixtury vložit nový výřez History tabu a rozdíly se ukážou tam.
 
 Přegenerování ikon:
 

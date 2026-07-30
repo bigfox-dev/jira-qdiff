@@ -117,6 +117,7 @@
 
     function renderSettings() {
         $('enabled').checked = settings.enabled;
+        $('platform').value = settings.platform;
         $('collapseUnchanged').checked = settings.collapseUnchanged;
         $('normalizeWhitespace').checked = settings.normalizeWhitespace;
         $('contextLines').value = settings.contextLines;
@@ -174,6 +175,12 @@
     function bind() {
         $('site-toggle').addEventListener('click', onSiteToggle);
 
+        $('platform').addEventListener('change', function (event) {
+            update({ platform: event.target.value }).then(function () {
+                flash('Adapter switched');
+            });
+        });
+
         bindCheckbox('enabled');
         bindCheckbox('collapseUnchanged');
         bindCheckbox('normalizeWhitespace');
@@ -199,6 +206,25 @@
                     return;
                 }
                 flash(response.enhanced + ' diff(s) rendered');
+            });
+        });
+
+        // Content scripts live in an isolated world, so the page console cannot
+        // reach JDHContent. This is the supported way to get a report out.
+        $('diagnose').addEventListener('click', function () {
+            if (!currentTab) return;
+            chrome.tabs.sendMessage(currentTab.id, { type: 'jdh:diagnose' }, function (response) {
+                if (chrome.runtime.lastError || !response || !response.report) {
+                    flash('Not running on this tab', true);
+                    return;
+                }
+                var json = JSON.stringify(response.report, null, 2);
+                console.log('[jira-diff] diagnostics', response.report);
+                navigator.clipboard.writeText(json).then(function () {
+                    flash('Report copied to clipboard');
+                }, function () {
+                    flash('Report in popup console', true);
+                });
             });
         });
 

@@ -166,6 +166,7 @@ body {
     font-weight: 600;
 }
 
+select,
 input[type="number"],
 textarea {
     width: 100%;

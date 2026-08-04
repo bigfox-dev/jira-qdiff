@@ -133,11 +133,35 @@
         };
     }
 
+    /**
+     * Strip the DOM back-references so a chain can cross a message boundary.
+     * Everything the renderer and blame need is plain data; `target` is the only
+     * live object in there.
+     */
+    function toPayload(chain) {
+        if (!chain) return null;
+        return {
+            field: chain.field,
+            complete: chain.complete,
+            gaps: chain.gaps.map(function (gap) { return { after: gap.after }; }),
+            domOrderNewestFirst: chain.domOrderNewestFirst,
+            revisions: chain.revisions.map(function (revision) {
+                return {
+                    value: revision.value,
+                    author: revision.author,
+                    when: revision.when,
+                    initial: revision.initial
+                };
+            })
+        };
+    }
+
     root.JDHHistory = {
         buildChains: buildChains,
         revisionIndexOf: revisionIndexOf,
         blame: blame,
-        assemble: assemble
+        assemble: assemble,
+        toPayload: toPayload
     };
 
     if (typeof module === 'object' && module.exports) {

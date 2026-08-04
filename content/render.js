@@ -563,6 +563,14 @@
         revisionsBtn.disabled = !canPickRevisions;
         toolbar.appendChild(revisionsBtn);
 
+        var zoomBtn = null;
+        if (!info.standalone) {
+            zoomBtn = toolbarButton('⤢', 'zoom', null,
+                'Enlarge to the full window (Esc to close)');
+            zoomBtn.setAttribute('aria-label', 'Enlarge diff');
+            toolbar.appendChild(zoomBtn);
+        }
+
         var menuButton = toolbarButton('⋯', 'menu', null, 'More actions');
         toolbar.appendChild(menuButton);
 
@@ -577,7 +585,13 @@
         menu.appendChild(el('div', 'jdh-menu-sep'));
         var expandItem = menuItem('Expand unchanged lines', 'expand');
         menu.appendChild(expandItem);
-        menu.appendChild(menuItem("Show Jira's original view", 'original'));
+        if (typeof info.onOpenInTab === 'function') {
+            menu.appendChild(menuItem('Open in a new tab', 'open-tab',
+                'Full-page view, independent of this Jira tab'));
+        }
+        if (typeof info.onToggleOriginal === 'function') {
+            menu.appendChild(menuItem("Show Jira's original view", 'original'));
+        }
         toolbar.appendChild(menu);
 
         container.appendChild(toolbar);
@@ -793,6 +807,30 @@
                 closeMenu();
                 if (typeof info.onToggleOriginal === 'function') info.onToggleOriginal();
             },
+            zoom: function () {
+                root.JDHExpand.toggle(container, function (expanded) {
+                    if (!zoomBtn) return;
+                    zoomBtn.textContent = expanded ? '⤡' : '⤢';
+                    zoomBtn.title = expanded
+                        ? 'Back into the page (Esc)'
+                        : 'Enlarge to the full window (Esc to close)';
+                    zoomBtn.classList.toggle('is-active', expanded);
+                });
+            },
+            'open-tab': function () {
+                closeMenu();
+                if (typeof info.onOpenInTab !== 'function') return;
+                info.onOpenInTab({
+                    fieldName: info.fieldName || '',
+                    oldText: currentTexts()[0],
+                    newText: currentTexts()[1],
+                    chain: chain,
+                    revisionIndex: info.revisionIndex,
+                    view: state.view
+                }, function (ok, message) {
+                    flash(ok ? 'Opened in a new tab' : (message || 'Could not open'), !ok);
+                });
+            },
             'copy-new': function () {
                 copyText(currentTexts()[1], function (ok) {
                     flash(ok ? 'New value copied' : 'Copy failed', !ok);
@@ -833,8 +871,25 @@
             stats: stats,
             repaint: paint,
             setMarkup: function (on) {
+                if (state.markup === on) return;
                 state.markup = on;
                 paint();
+            },
+            /** Adopt a layout chosen in another widget, without a rebuild. */
+            setView: function (mode) {
+                if (state.view === mode) return;
+                // Blame is a per-field deep dive the user asked for explicitly;
+                // another widget's layout switch must not yank them out of it.
+                if (state.view === 'blame') return;
+                if (mode !== 'split' && mode !== 'unified') return;
+                state.view = mode;
+                paint();
+            },
+            /** Must run before the widget is detached, or an expanded overlay
+             *  would be left stranded on <body>. */
+            destroy: function () {
+                closeMenu();
+                if (root.JDHExpand) root.JDHExpand.release(container);
             }
         };
     }

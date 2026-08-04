@@ -167,6 +167,64 @@ test('blame handles a field that was empty to begin with', () => {
     assert.deepEqual(result.revisions.map((r) => r.author), ['Michal', 'Michal']);
 });
 
+/* ------------------------------------------------------------------ *
+ * Serialisation for the standalone viewer
+ * ------------------------------------------------------------------ */
+
+test('toPayload strips the DOM back-references', () => {
+    const entries = entriesFor('Description', [
+        ['a', 'b', 'Michal', 'July 1'],
+        ['b', 'c', 'Petra', 'July 2']
+    ]);
+    // Stand in for the live DOM nodes a real target carries.
+    entries.forEach((entry) => { entry.node = { nodeType: 1 }; entry.mount = () => {}; });
+
+    const chain = History.buildChains(entries).get('Description');
+    const payload = History.toPayload(chain);
+
+    assert.doesNotThrow(() => JSON.stringify(payload), 'payload must be serialisable');
+    assert.ok(
+        payload.revisions.every((r) => !('target' in r)),
+        'no revision may keep a target reference'
+    );
+    assert.deepEqual(payload.revisions.map((r) => r.value), ['a', 'b', 'c']);
+    assert.deepEqual(payload.revisions.map((r) => r.author), [null, 'Michal', 'Petra']);
+    assert.deepEqual(payload.revisions.map((r) => r.when), [null, 'July 1', 'July 2']);
+    assert.equal(payload.complete, true);
+    assert.equal(payload.field, 'Description');
+});
+
+test('a chain survives a round trip and still blames correctly', () => {
+    const chain = History.buildChains(entriesFor('Description', [
+        ['first\nsecond', 'first\nsecond\nthird', 'Michal'],
+        ['first\nsecond\nthird', 'first\nCHANGED\nthird', 'Petra']
+    ])).get('Description');
+
+    const revived = JSON.parse(JSON.stringify(History.toPayload(chain)));
+    const result = History.blame(revived);
+
+    assert.deepEqual(result.lines, ['first', 'CHANGED', 'third']);
+    assert.deepEqual(result.revisions.map((r) => r.author), [null, 'Petra', 'Michal']);
+    assert.equal(result.trustworthy, true);
+});
+
+test('toPayload keeps gap information so the viewer can warn too', () => {
+    const chain = History.buildChains(entriesFor('Description', [
+        ['a', 'b', 'Michal'],
+        ['c', 'd', 'Petra']
+    ])).get('Description');
+
+    const payload = History.toPayload(chain);
+    assert.equal(payload.complete, false);
+    assert.deepEqual(payload.gaps, [{ after: 1 }]);
+    assert.equal(History.blame(payload).trustworthy, false);
+});
+
+test('toPayload tolerates no chain at all', () => {
+    assert.equal(History.toPayload(null), null);
+    assert.equal(History.toPayload(undefined), null);
+});
+
 test('blame handles a field that was emptied', () => {
     const chain = History.buildChains(entriesFor('Description', [
         ['gone', '', 'Michal']

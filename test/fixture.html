@@ -28,6 +28,38 @@
     <script>
         // Stand-in for chrome.storage while running outside the extension.
         window.JDH_TEST_SETTINGS = { viewMode: 'split' };
+        /*
+         * Minimal storage + runtime stub. Without it the settings round-trip
+         * (widget control -> save -> storage.onChanged -> applySettings) never
+         * runs in the fixture, which is how the overlay-collapse bug slipped by.
+         */
+        (function () {
+            var store = { settings: undefined };
+            var listeners = [];
+            window.chrome = {
+                runtime: {
+                    lastError: null,
+                    sendMessage: function (message, respond) {
+                        respond({ ok: false, error: 'no extension host in the fixture' });
+                    }
+                },
+                storage: {
+                    sync: {
+                        get: function (key, respond) { respond({ settings: store.settings }); },
+                        set: function (patch, respond) {
+                            var previous = store.settings;
+                            Object.assign(store, patch);
+                            listeners.forEach(function (fn) {
+                                fn({ settings: { oldValue: previous, newValue: store.settings } }, 'sync');
+                            });
+                            if (respond) respond();
+                        }
+                    },
+                    onChanged: { addListener: function (fn) { listeners.push(fn); } }
+                }
+            };
+        })();
+
     </script>
 </head>
 <body>
@@ -266,6 +298,7 @@ Konec.</td>
 <script src="../content/render.js"></script>
 <script src="../content/adapters.js"></script>
 <script src="../content/filter.js"></script>
+<script src="../content/expand.js"></script>
 <script src="../content/content.js"></script>
 </body>
 </html>

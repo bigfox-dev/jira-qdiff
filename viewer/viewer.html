@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Jira diff</title>
+    <link rel="stylesheet" href="../content/styles.css">
+    <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+    <header class="vw-header">
+        <div class="vw-title">
+            <strong id="vw-field">Diff</strong>
+            <span id="vw-issue" class="vw-issue"></span>
+        </div>
+        <a id="vw-link" class="vw-link" hidden>Open the work item ↗</a>
+    </header>
+
+    <main id="vw-body">
+        <p class="vw-status" id="vw-status">Loading…</p>
+    </main>
+
+    <script src="../common/settings.js"></script>
+    <script src="../content/diff.js"></script>
+    <script src="../content/markup.js"></script>
+    <script src="../content/history.js"></script>
+    <script src="../content/render.js"></script>
+    <script src="viewer.js"></script>
+</body>
+</html>

@@ -49,6 +49,46 @@
     }
 
     /* ------------------------------------------------------------------ *
+     * Standalone viewer
+     * ------------------------------------------------------------------ */
+
+    function canOpenTabs() {
+        return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage;
+    }
+
+    /** "PROJ-123" out of /browse/PROJ-123 or ?selectedIssue=PROJ-123. */
+    function issueKey() {
+        var fromPath = /\/browse\/([A-Z][A-Z0-9_]*-\d+)/i.exec(location.pathname);
+        if (fromPath) return fromPath[1];
+        var fromQuery = /[?&](?:selectedIssue|issueKey)=([A-Z][A-Z0-9_]*-\d+)/i
+            .exec(location.search);
+        return fromQuery ? fromQuery[1] : '';
+    }
+
+    function openInTab(request, done) {
+        var payload = {
+            fieldName: request.fieldName,
+            oldText: request.oldText,
+            newText: request.newText,
+            // The live chain holds DOM nodes, which cannot cross a message.
+            chain: root.JDHHistory.toPayload(request.chain),
+            revisionIndex: request.revisionIndex,
+            view: request.view,
+            settings: settings,
+            source: { url: location.href, issueKey: issueKey() }
+        };
+
+        chrome.runtime.sendMessage({ type: 'jdh:openViewer', payload: payload },
+            function (response) {
+                if (chrome.runtime.lastError) {
+                    done(false, chrome.runtime.lastError.message);
+                    return;
+                }
+                done(!!(response && response.ok), response && response.error);
+            });
+    }
+
+    /* ------------------------------------------------------------------ *
      * Enhancing one change record
      * ------------------------------------------------------------------ */
 
@@ -94,7 +134,10 @@
                     if (typeof chrome !== 'undefined' && chrome.storage) {
                         root.JDHSettings.save({ highlightMarkup: on });
                     }
-                }
+                },
+                onOpenInTab: canOpenTabs() ? function (request, done) {
+                    openInTab(request, done);
+                } : null
             });
         } catch (err) {
             console.warn('[jira-diff] diff failed, leaving Jira markup intact', err);
@@ -116,6 +159,9 @@
     function teardown() {
         enhancements.forEach(function (item) {
             try {
+                // Collapse first: an expanded widget lives on <body>, and
+                // detaching it from there would leave the overlay behind.
+                if (item.widget && item.widget.destroy) item.widget.destroy();
                 item.handle.detach();
             } catch (err) {
                 console.warn('[jira-diff] could not detach widget', err);
@@ -185,19 +231,23 @@
         }, DEBOUNCE_MS);
     }
 
+    var OUR_CLASSES = [
+        'jdh', 'jdh-host', 'jdh-restore', 'jdh-filter',
+        'jdh-overlay', 'jdh-backdrop', 'jdh-placeholder'
+    ];
+
     function isOurNode(node) {
-        return node.nodeType === 1 && node.classList &&
-            (node.classList.contains('jdh-host') ||
-             node.classList.contains('jdh-restore') ||
-             node.classList.contains('jdh-filter') ||
-             node.classList.contains('jdh'));
+        if (node.nodeType !== 1 || !node.classList) return false;
+        return OUR_CLASSES.some(function (name) {
+            return node.classList.contains(name);
+        });
     }
 
     /** Ignore the DOM churn we cause ourselves, otherwise we re-scan forever. */
     function isOurMutation(mutation) {
         var target = mutation.target;
         if (target && target.nodeType === 1 && target.closest &&
-            target.closest('.jdh, .jdh-filter')) {
+            target.closest('.jdh, .jdh-filter, .jdh-overlay')) {
             return true;
         }
         var touched = Array.prototype.slice.call(mutation.addedNodes)
@@ -305,25 +355,43 @@
      * Boot
      * ------------------------------------------------------------------ */
 
-    /** True when `key` is the only setting that changed. */
-    function onlyDiffers(before, after, key) {
-        var differing = Object.keys(root.JDHSettings.DEFAULTS).filter(function (name) {
+    /**
+     * Settings a widget can adopt in place. Both of these are written by the
+     * widgets' own controls, so the resulting storage event comes straight back
+     * here — rebuilding on it would destroy the widget the user just clicked,
+     * taking its expanded lines, its selected revision pair, and (worst of all)
+     * the full-window overlay down with it.
+     */
+    var IN_PLACE_SETTINGS = ['highlightMarkup', 'viewMode'];
+
+    function changedKeys(before, after) {
+        return Object.keys(root.JDHSettings.DEFAULTS).filter(function (name) {
             return JSON.stringify(before[name]) !== JSON.stringify(after[name]);
         });
-        return differing.length === 1 && differing[0] === key;
     }
 
     function applySettings(next) {
         var previous = settings;
+        var changed = changedKeys(previous, next);
 
-        // Toggling markup from a widget's own menu writes to storage, which comes
-        // straight back here. Repainting in place keeps expanded lines and the
-        // selected revision pair instead of throwing the widgets away.
-        if (onlyDiffers(previous, next, 'highlightMarkup')) {
+        if (!changed.length) {
+            settings = next;
+            return;
+        }
+
+        var inPlaceOnly = changed.every(function (key) {
+            return IN_PLACE_SETTINGS.indexOf(key) !== -1;
+        });
+
+        if (inPlaceOnly) {
             settings = next;
             enhancements.forEach(function (item) {
-                if (item.widget && item.widget.setMarkup) {
+                if (!item.widget) return;
+                if (changed.indexOf('highlightMarkup') !== -1 && item.widget.setMarkup) {
                     item.widget.setMarkup(next.highlightMarkup);
+                }
+                if (changed.indexOf('viewMode') !== -1 && item.widget.setView) {
+                    item.widget.setView(next.viewMode);
                 }
             });
             return;

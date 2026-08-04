@@ -24,10 +24,12 @@ const PATTERN = 'https://jira.firma.cz/*';
 function makeApi(options = {}) {
     const state = {
         storage: {},
+        session: {},
         scripts: [],
         origins: new Set(options.origins || []),
         injected: [],
-        registerCalls: []
+        registerCalls: [],
+        createdTabs: []
     };
 
     const api = {
@@ -39,6 +41,26 @@ function makeApi(options = {}) {
                 async set(obj) {
                     Object.assign(state.storage, obj);
                 }
+            },
+            session: {
+                async get(key) {
+                    if (key === null) return { ...state.session };
+                    return key in state.session ? { [key]: state.session[key] } : {};
+                },
+                async set(obj) {
+                    Object.assign(state.session, obj);
+                },
+                async remove(keys) {
+                    (Array.isArray(keys) ? keys : [keys]).forEach((k) => {
+                        delete state.session[k];
+                    });
+                }
+            }
+        },
+        tabs: {
+            async create({ url }) {
+                state.createdTabs.push(url);
+                return { id: state.createdTabs.length };
             }
         },
         scripting: {
@@ -86,6 +108,7 @@ function makeApi(options = {}) {
             onRemoved: { addListener() {} }
         },
         runtime: {
+            getURL: (path) => 'chrome-extension://test/' + path,
             onMessage: { addListener(fn) { state.onMessage = fn; } },
             onInstalled: { addListener() {} },
             onStartup: { addListener() {} }
@@ -196,6 +219,66 @@ test('registration retries without persistAcrossSessions when rejected', async (
     assert.equal(state.registerCalls[0].persistAcrossSessions, true);
     assert.equal('persistAcrossSessions' in state.registerCalls[1], false);
     assert.equal(state.scripts.length, 1, 'site must end up registered anyway');
+});
+
+/* ------------------------------------------------------------------ *
+ * Standalone viewer hand-off
+ * ------------------------------------------------------------------ */
+
+test('openViewer stores the payload and opens a tab pointing at it', async () => {
+    const { api, state } = makeApi();
+    load({ browser: api });
+
+    const result = await send(state, 'jdh:openViewer', {
+        fieldName: 'Description', oldText: 'a', newText: 'b'
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(state.createdTabs.length, 1);
+
+    const keys = Object.keys(state.session);
+    assert.equal(keys.length, 1);
+    assert.ok(keys[0].startsWith('viewer:'));
+    assert.equal(plain(state.session[keys[0]]).newText, 'b');
+    assert.ok(
+        state.createdTabs[0].includes('viewer/viewer.html?id=' + encodeURIComponent(keys[0])),
+        `tab url must carry the id, got ${state.createdTabs[0]}`
+    );
+    assert.ok(state.session[keys[0]].createdAt, 'payload needs a timestamp for pruning');
+});
+
+test('old viewer payloads are pruned so session storage cannot grow forever', async () => {
+    const { api, state } = makeApi();
+    load({ browser: api });
+
+    for (let i = 0; i < 14; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await send(state, 'jdh:openViewer', { fieldName: 'F' + i, oldText: 'a', newText: 'b' });
+    }
+
+    const keys = Object.keys(state.session).filter((k) => k.startsWith('viewer:'));
+    assert.equal(keys.length, 10, 'only the ten most recent hand-offs are kept');
+
+    // The newest must survive; the very first must be gone.
+    const fields = keys.map((k) => state.session[k].fieldName);
+    assert.ok(fields.includes('F13'), 'the newest payload must be kept');
+    assert.ok(!fields.includes('F0'), 'the oldest payload must be dropped');
+});
+
+test('an oversized diff is refused rather than blowing the session quota', async () => {
+    const { api, state } = makeApi();
+    load({ browser: api });
+
+    const result = await send(state, 'jdh:openViewer', {
+        fieldName: 'Description',
+        oldText: 'x'.repeat(3 * 1024 * 1024),
+        newText: 'y'.repeat(3 * 1024 * 1024)
+    });
+
+    assert.equal(result.ok, false);
+    assert.match(result.error, /too large/i);
+    assert.equal(state.createdTabs.length, 0, 'no tab may be opened');
+    assert.deepEqual(Object.keys(state.session), [], 'nothing may be stored');
 });
 
 test('unknown messages are declined so other listeners can handle them', async () => {

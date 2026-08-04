@@ -26,6 +26,7 @@ const CONTENT_JS = [
     'content/render.js',
     'content/adapters.js',
     'content/filter.js',
+    'content/expand.js',
     'content/content.js'
 ];
 const CONTENT_CSS = ['content/styles.css'];
@@ -122,9 +123,59 @@ async function injectNow(tabId) {
     await api.scripting.executeScript({ target: { tabId }, files: CONTENT_JS });
 }
 
+const VIEWER_PREFIX = 'viewer:';
+/** Keep a handful so reloading a viewer tab still works. */
+const VIEWER_KEEP = 10;
+/** storage.session tops out around 10 MB; stay well clear of it. */
+const VIEWER_MAX_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Hand a diff over to a standalone viewer tab.
+ *
+ * The payload goes through storage.session rather than a message to the new tab:
+ * the tab is not listening yet when it is created, and an MV3 background can be
+ * shut down at any moment, so holding it in a variable would lose it.
+ */
+async function openViewer(payload) {
+    const serialised = JSON.stringify(payload);
+    if (serialised.length > VIEWER_MAX_BYTES) {
+        return { ok: false, error: 'This diff is too large to open in a tab' };
+    }
+
+    const stored = await api.storage.session.get(null);
+    const existing = Object.keys(stored).filter((key) => key.startsWith(VIEWER_PREFIX));
+
+    // Order by an explicit sequence number, not by timestamp: two hand-offs in
+    // the same millisecond would tie, the sort would be a no-op, and pruning
+    // would then drop the newest payloads instead of the oldest. The counter is
+    // derived from what is already stored, so it survives a background restart.
+    const nextSeq = existing.reduce(
+        (max, key) => Math.max(max, stored[key].seq || 0), 0
+    ) + 1;
+
+    const stale = existing
+        .sort((a, b) => (stored[b].seq || 0) - (stored[a].seq || 0))
+        .slice(VIEWER_KEEP - 1);
+    if (stale.length) await api.storage.session.remove(stale);
+
+    const id = VIEWER_PREFIX + nextSeq + '-' + Math.random().toString(36).slice(2, 8);
+    payload.seq = nextSeq;
+    payload.createdAt = Date.now();
+    await api.storage.session.set({ [id]: payload });
+
+    await api.tabs.create({
+        url: api.runtime.getURL('viewer/viewer.html?id=' + encodeURIComponent(id))
+    });
+    return { ok: true, id };
+}
+
 const handlers = {
     async status() {
         return { ok: true, sites: await getSites() };
+    },
+
+    async openViewer(payload) {
+        return openViewer(payload);
     },
 
     async enableSite({ pattern, tabId }) {

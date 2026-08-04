@@ -387,6 +387,47 @@ td.jdh-host {
 }
 
 /* --------------------------------------------------------------------- *
+ * Full-window overlay
+ *
+ * The widget is moved to <body> while expanded, so these are the only styles
+ * that have to win against Jira's own layout.
+ * --------------------------------------------------------------------- */
+
+.jdh-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    background: rgba(9, 30, 66, 0.62);
+}
+
+.jdh-overlay {
+    position: fixed;
+    inset: 2vh 2vw;
+    z-index: 2147483001;
+    display: flex;
+}
+
+.jdh-overlay > .jdh {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    box-shadow: 0 12px 40px rgba(9, 30, 66, 0.4);
+}
+
+.jdh.is-expanded > .jdh-viewport {
+    flex: 1 1 auto;
+    max-height: none;
+}
+
+/* Holds the widget's slot in the page while it is expanded. */
+.jdh-placeholder {
+    display: none;
+}
+
+/* --------------------------------------------------------------------- *
  * Field filter bar
  * --------------------------------------------------------------------- */
 

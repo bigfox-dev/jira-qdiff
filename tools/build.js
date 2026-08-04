@@ -18,7 +18,9 @@ const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 
 /** Files copied verbatim into every target. */
-const PAYLOAD = ['background.js', 'common', 'content', 'popup', 'icons', 'LICENSE'];
+const PAYLOAD = [
+    'background.js', 'common', 'content', 'popup', 'viewer', 'icons', 'LICENSE'
+];
 
 /** Firefox add-on id. Change it if you publish under your own account. */
 const GECKO_ID = 'jira-diff-highlighter@onprem';

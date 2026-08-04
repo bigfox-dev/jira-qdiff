@@ -44,6 +44,11 @@ sdílené — liší se jen adaptér, který změnu v DOM najde.
   `[odkazy]`, `!obrázky!`. Přepínatelné v nabídce `⋯` u každého diffu.
 - **Kopírování** — nová hodnota, stará hodnota, nebo celý diff jako
   standardní unified patch.
+- **Zvětšení na celé okno** — tlačítko `⤢` v liště diffu. Zavírá se `Esc`
+  nebo klikem mimo. Widget zůstává plně funkční (blame, revize, kopírování).
+- **Samostatná stránka** — `⋯ → Open in a new tab`. Diff se otevře na vlastní
+  stránce rozšíření, nezávisle na Jira tabu; hodí se na blame a timeline
+  na velkém monitoru.
 
 ---
 
@@ -54,7 +59,7 @@ v Chrome; pro Firefox (a pro balíčky k distribuci) se buildí:
 
 ```bash
 npm run build          # -> dist/chrome/ a dist/firefox/
-npm run build:zip      # + dist/chrome-1.1.0.zip, dist/firefox-1.1.0.zip
+npm run build:zip      # + dist/chrome-1.2.0.zip, dist/firefox-1.2.0.zip
 ```
 
 ### Chrome / Edge
@@ -73,7 +78,7 @@ npm run build:zip      # + dist/chrome-1.1.0.zip, dist/firefox-1.1.0.zip
 
 Dočasný add-on zmizí při restartu prohlížeče. Pro trvalou instalaci potřebuješ
 podepsaný XPI z [addons.mozilla.org](https://addons.mozilla.org/developers/)
-(nahraj `dist/firefox-1.1.0.zip`, klidně jako *unlisted* — dostaneš podepsaný
+(nahraj `dist/firefox-1.2.0.zip`, klidně jako *unlisted* — dostaneš podepsaný
 XPI jen pro sebe), nebo Firefox Developer Edition / ESR s
 `xpinstall.signatures.required=false` v `about:config`.
 
@@ -131,9 +136,11 @@ content/
   render.js            model řádků, sbalování, CSS grid, lišta widgetu, blame
   adapters.js          hledání změn: Server/DC tabulka + Cloud struktura
   filter.js            lišta filtru polí nad historií
+  expand.js            overlay na celé okno
   content.js           orchestrace, MutationObserver, přepínání, diagnostika
   styles.css           vzhled widgetu (světlý/tmavý)
 popup/                 popup UI
+viewer/                samostatná stránka s diffem (stejný renderer)
 tools/
   build.js             dist/chrome + dist/firefox (+ --zip), bez závislostí
   make-icons.js        generátor ikon
@@ -145,6 +152,24 @@ test/
   background.test.mjs  background proti falešným API obou prohlížečů
   adapters.test.mjs    routing platforem + parsování Cloud labelu
 ```
+
+### Zvětšení a samostatná stránka
+
+**Overlay** widget fyzicky přesune do `<body>`, ne že mu jen dá
+`position: fixed`. Cloud DOM je plný předků s `transform` a `contain`, což
+z fixed elementu udělá jen absolutně pozicovaný — přesun z toho podstromu
+problém obejde místo hádání, který předek za to může. Původní místo drží
+placeholder, takže se widget vrátí přesně tam, odkud přišel. Rescan během
+zvětšení nic neosiří: `teardown()` nejdřív zavolá `widget.destroy()`.
+
+**Samostatná stránka** dostane payload přes `storage.session`, ne zprávou do
+nového tabu — ten při vytvoření ještě neposlouchá a MV3 background může být
+kdykoli uspán, takže držet to v proměnné by o data přišlo. Řetěz revizí obsahuje
+DOM referencí, které přes hranici zprávy neprojdou, proto jde přes
+`JDHHistory.toPayload()`. Drží se posledních 10 hand-offů (aby fungovalo
+načtení stránky znovu) a payload nad 4 MB se odmítne, ať se nepřeteče kvóta.
+
+Stránka používá **stejný renderer** — nic Jira-specifického se do ní nedostane.
 
 ### Řetěz revizí a proč hlásí neúplnost
 

@@ -19,6 +19,7 @@ const api = globalThis.browser || globalThis.chrome;
 
 const CONTENT_JS = [
     'common/settings.js',
+    'common/theme.js',
     'content/diff.js',
     'content/extract.js',
     'content/markup.js',

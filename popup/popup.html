@@ -47,6 +47,16 @@
         </div>
 
         <div class="field">
+            <span class="label">Theme</span>
+            <div class="segmented" id="theme">
+                <button type="button" data-value="auto">Auto</button>
+                <button type="button" data-value="light">Light</button>
+                <button type="button" data-value="dark">Dark</button>
+            </div>
+            <p class="hint" id="themeHint"></p>
+        </div>
+
+        <div class="field">
             <span class="label">Highlight granularity</span>
             <div class="segmented" id="granularity">
                 <button type="button" data-value="word">Word</button>
@@ -121,6 +131,7 @@
     </footer>
 
     <script src="../common/settings.js"></script>
+    <script src="../common/theme.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

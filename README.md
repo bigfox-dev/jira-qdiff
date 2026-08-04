@@ -1,4 +1,4 @@
-# Jira Diff Highlighter — Server / Data Center
+# Jira Diff Highlighter
 
 Rozšíření pro **Chrome i Firefox** (MV3), které na záložce **History** v detailu
 tasku nahradí Jiřin plochý výpis „Original / New“ skutečným barevným diffem —
@@ -8,6 +8,11 @@ Funguje na **on-premise Jiře (Server / Data Center)** i na **Jira Cloud**
 (`*.atlassian.net`). Obě platformy mají úplně jiný DOM, ale widget i vzhled jsou
 sdílené — liší se jen adaptér, který změnu v DOM najde.
 
+![Dvousloupcový diff s otevřeným panelem revizí](docs/revisions.png)
+
+Dvousloupcový diff se zvýrazněním po slovech, sbaleným blokem nezměněných řádků
+a otevřeným panelem *Revisions* — porovnání verze `v9` proti `v60` z 61
+zaznamenaných revizí popisu.
 
 ---
 
@@ -26,7 +31,9 @@ sdílené — liší se jen adaptér, který změnu v DOM najde.
   a zdvojené konce řádků (Jira posílá `<br/>` **i** skutečný newline).
 - **Zpět na originál** — tlačítko *Jira original* schová widget a ukáže
   původní buňky Jiry; návrat tlačítkem *↩ Enhanced diff*.
-- **Světlý i tmavý motiv** podle `prefers-color-scheme`.
+- **Světlý i tmavý motiv** — přepínač *Theme* v popupu: *Auto* / *Light* / *Dark*.
+  *Auto* se drží motivu, který si nastavil v samotné Jiře, a teprve když ho Jira
+  neuvádí, spadne na motiv OS.
 - **Rozumné rozpoznání polí** — v režimu *Auto* se diff použije na každou
   víceřádkovou nebo dostatečně dlouhou hodnotu (Description, Environment,
   Acceptance Criteria, vlastní textová pole…), krátké technické změny
@@ -49,6 +56,25 @@ sdílené — liší se jen adaptér, který změnu v DOM najde.
 - **Samostatná stránka** — `⋯ → Open in a new tab`. Diff se otevře na vlastní
   stránce rozšíření, nezávisle na Jira tabu; hodí se na blame a timeline
   na velkém monitoru.
+
+### Jak to vypadá
+
+**Filtr polí** nad historií. Čísla jsou počty změn daného pole; přeškrtnuté
+chipy jsou vypnuté. Tady je z 91 změn skrytých 78 — všechno účetní šum
+(Worklog Id, Time Spent, Remaining Estimate), takže zůstane vidět jediná
+změna popisu, kvůli které tam člověk šel.
+
+![Lišta filtru polí s chipy a počty změn](docs/history-filter.png)
+
+**Blame po řádcích.** Ke každému řádku aktuální hodnoty jméno a datum revize,
+která ho zavedla — sestavené zřetězením všech 61 zaznamenaných změn popisu.
+
+![Blame se sloupcem autora a data u každého řádku](docs/blame.png)
+
+**Sjednocený pohled** v tmavém motivu, přímo v proudu historie. Dvě po sobě
+jdoucí editace jednoho popisu, každá se svým vlastním widgetem.
+
+![Sjednocený diff v tmavém motivu](docs/unified-dark.png)
 
 ---
 
@@ -100,11 +126,17 @@ i samotné oprávnění).
 
 ## Nastavení (popup)
 
+![Popup s nastavením otevřený nad Jirou](docs/side-by-side-dark.png)
+
+Karta **This site** nahoře je to, čím se rozšíření na daném hostu zapíná
+(viz [Instalace](#instalace)); pod ní jsou volby z tabulky níž.
+
 | Volba | Výchozí | Popis |
 |---|---|---|
 | Enhance history diffs | zapnuto | Hlavní vypínač. |
 | Jira flavour | Auto-detect | Který adaptér běží. *Auto* rozhoduje podle hostname; přepni ručně, pokud máš Cloud za vlastní doménou nebo on-prem na `atlassian.*`. |
 | Layout | Side by side | Dvousloupcový vs. sjednocený pohled. |
+| Theme | Auto | *Auto* = podle Jiry, jinak podle OS. *Light* / *Dark* vynutí barvy bez ohledu na obojí. |
 | Highlight granularity | Word | Zvýraznění po slovech nebo po znacích. |
 | Collapse unchanged lines | zapnuto | Sbalování nezměněných úseků. |
 | Context lines | 3 | Kolik nezměněných řádků zůstane kolem změny. |
@@ -128,6 +160,7 @@ záložkách.
 manifest.json          MV3 pro Chrome; Firefox varianta se z něj odvozuje
 background.js          registrace/odregistrace content scriptů podle oprávnění
 common/settings.js     sdílené defaulty + storage vrstva (popup i content)
+common/theme.js        rozhodnutí světlý/tmavý (nastavení > Jira > OS)
 content/
   diff.js              Myers O(ND) + patience anchory, word/char tokenizer
   extract.js           DOM -> čistý text (labely, hist-value, <br/>, &nbsp;, seznamy)
@@ -141,6 +174,7 @@ content/
   styles.css           vzhled widgetu (světlý/tmavý)
 popup/                 popup UI
 viewer/                samostatná stránka s diffem (stejný renderer)
+docs/                  screenshoty pro README (nejde do buildu)
 tools/
   build.js             dist/chrome + dist/firefox (+ --zip), bez závislostí
   make-icons.js        generátor ikon
@@ -152,6 +186,27 @@ test/
   background.test.mjs  background proti falešným API obou prohlížečů
   adapters.test.mjs    routing platforem + parsování Cloud labelu
 ```
+
+### Jak se rozhoduje motiv
+
+Veškeré tmavé styly visí na `html[data-jdh-theme="dark"]`, **nikde není
+`prefers-color-scheme`**. Ten atribut nastavuje [common/theme.js](common/theme.js)
+a je to jediné místo, kde se rozhoduje. Přednost:
+
+1. **Nastavení** *Light* / *Dark* — vynutí barvu, na nic dalšího se nekouká.
+2. **Jira** — v režimu *Auto* se čte `data-color-mode` na `<html>`. Přijme se
+   jen doslovné `light`/`dark`; když tam Jira má vlastní „match browser",
+   znamená to, že se sama odkládá, takže se odloží i rozšíření.
+3. **OS** — `prefers-color-scheme`.
+
+Proč Jira bije OS: Jira má vlastní přepínač motivu, a když se s OS rozejdou,
+widget řízený jen OS svítí bíle uprostřed tmavé stránky. Změna motivu Jiry
+za běhu se sleduje `MutationObserver`em (`data-jdh-theme` schválně **není**
+v jeho `attributeFilter`, aby si zápis nespouštěl sám sebe).
+
+> Přesný název atributu Jiry je odvozený z Atlassian design tokens a proti živé
+> instanci ověřený není. Kdyby *Auto* motiv Jiry nechytalo, funguje to jako
+> dřív podle OS a pomůže ruční *Light* / *Dark*.
 
 ### Zvětšení a samostatná stránka
 

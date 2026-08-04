@@ -8,16 +8,14 @@
     --danger: #ae2a19;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #1d2125;
-        --card: #22272b;
-        --border: #3c4657;
-        --text: #c7d1db;
-        --muted: #8c9bab;
-        --accent: #579dff;
-        --danger: #ff9c8f;
-    }
+html[data-jdh-theme="dark"] {
+    --bg: #1d2125;
+    --card: #22272b;
+    --border: #3c4657;
+    --text: #c7d1db;
+    --muted: #8c9bab;
+    --accent: #579dff;
+    --danger: #ff9c8f;
 }
 
 * {

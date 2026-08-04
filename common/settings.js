@@ -16,6 +16,12 @@
         enabled: true,
         /** 'split' | 'unified' */
         viewMode: 'split',
+        /**
+         * 'auto' | 'light' | 'dark'
+         * 'auto' follows Jira's own colour mode when it exposes one, and the
+         * OS setting otherwise.
+         */
+        theme: 'auto',
         /** 'word' | 'char' */
         granularity: 'word',
         /** Fold long runs of untouched lines. */

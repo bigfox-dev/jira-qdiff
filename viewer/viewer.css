@@ -8,16 +8,14 @@
     --vw-danger: #ae2a19;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --vw-bg: #1d2125;
-        --vw-card: #22272b;
-        --vw-border: #3c4657;
-        --vw-text: #c7d1db;
-        --vw-muted: #8c9bab;
-        --vw-accent: #579dff;
-        --vw-danger: #ff9c8f;
-    }
+html[data-jdh-theme="dark"] {
+    --vw-bg: #1d2125;
+    --vw-card: #22272b;
+    --vw-border: #3c4657;
+    --vw-text: #c7d1db;
+    --vw-muted: #8c9bab;
+    --vw-accent: #579dff;
+    --vw-danger: #ff9c8f;
 }
 
 * {

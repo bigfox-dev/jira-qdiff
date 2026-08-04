@@ -129,8 +129,16 @@
         $('noisyFields').value = settings.noisyFields.join(', ');
 
         paintSegmented('viewMode', settings.viewMode);
+        paintSegmented('theme', settings.theme);
         paintSegmented('granularity', settings.granularity);
         paintSegmented('fieldMode', settings.fieldMode);
+
+        // The popup follows the same setting as the widgets.
+        var resolved = JDHTheme.apply(settings.theme);
+        $('themeHint').textContent = settings.theme === 'auto'
+            ? 'Follows Jira’s own colour mode, or your OS when Jira has none '
+                + '(now: ' + resolved + ').'
+            : 'Forced ' + settings.theme + ', whatever Jira and the OS say.';
 
         $('context-field').hidden = !settings.collapseUnchanged;
         $('minlength-field').hidden = settings.fieldMode !== 'auto';
@@ -195,6 +203,7 @@
         bindNumber('contextLines', 0, 20);
         bindNumber('minLength', 0, 5000);
         bindSegmented('viewMode', 'viewMode');
+        bindSegmented('theme', 'theme');
         bindSegmented('granularity', 'granularity');
         bindSegmented('fieldMode', 'fieldMode');
 

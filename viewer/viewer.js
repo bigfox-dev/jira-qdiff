@@ -36,6 +36,7 @@
         }
 
         var settings = JDHSettings.merge(payload.settings);
+        JDHTheme.apply(settings.theme);
         // The page is already the full window, and there is no Jira markup here
         // to fall back to, so both of those controls are suppressed.
         settings.viewMode = payload.view === 'unified' ? 'unified' : settings.viewMode;

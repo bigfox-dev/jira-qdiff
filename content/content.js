@@ -362,7 +362,7 @@
      * taking its expanded lines, its selected revision pair, and (worst of all)
      * the full-window overlay down with it.
      */
-    var IN_PLACE_SETTINGS = ['highlightMarkup', 'viewMode'];
+    var IN_PLACE_SETTINGS = ['highlightMarkup', 'viewMode', 'theme'];
 
     function changedKeys(before, after) {
         return Object.keys(root.JDHSettings.DEFAULTS).filter(function (name) {
@@ -385,6 +385,7 @@
 
         if (inPlaceOnly) {
             settings = next;
+            if (changed.indexOf('theme') !== -1) root.JDHTheme.apply(next.theme);
             enhancements.forEach(function (item) {
                 if (!item.widget) return;
                 if (changed.indexOf('highlightMarkup') !== -1 && item.widget.setMarkup) {
@@ -415,8 +416,13 @@
     };
 
     function start() {
+        // Paint the theme before the first widget exists, so nothing flashes
+        // in the wrong palette.
+        root.JDHTheme.apply(root.JDHSettings.DEFAULTS.theme);
+
         root.JDHSettings.load().then(function (loaded) {
             settings = loaded;
+            root.JDHTheme.apply(settings.theme);
             if (settings.enabled) scan();
             observe();
         });

@@ -4,7 +4,7 @@
     "private": true,
     "description": "Chrome/Firefox extension that renders readable diffs on the History tab of Jira Server/Data Center and Jira Cloud.",
     "scripts": {
-        "test": "node --test test/diff.test.mjs test/background.test.mjs test/adapters.test.mjs",
+        "test": "node --test test/diff.test.mjs test/background.test.mjs test/adapters.test.mjs test/history.test.mjs test/markup.test.mjs",
         "build": "node tools/build.js",
         "build:zip": "node tools/build.js --zip",
         "serve": "node tools/serve.js",

@@ -120,9 +120,13 @@
         $('platform').value = settings.platform;
         $('collapseUnchanged').checked = settings.collapseUnchanged;
         $('normalizeWhitespace').checked = settings.normalizeWhitespace;
+        $('highlightMarkup').checked = settings.highlightMarkup;
+        $('showFilterBar').checked = settings.showFilterBar;
+        $('hideNoisyFields').checked = settings.hideNoisyFields;
         $('contextLines').value = settings.contextLines;
         $('minLength').value = settings.minLength;
         $('fieldNames').value = settings.fieldNames.join(', ');
+        $('noisyFields').value = settings.noisyFields.join(', ');
 
         paintSegmented('viewMode', settings.viewMode);
         paintSegmented('granularity', settings.granularity);
@@ -130,6 +134,7 @@
 
         $('context-field').hidden = !settings.collapseUnchanged;
         $('minlength-field').hidden = settings.fieldMode !== 'auto';
+        $('noisy-field').hidden = !settings.showFilterBar;
         $('fieldModeHint').textContent = settings.fieldMode === 'auto'
             ? 'Any multi-line or long value, plus the named fields below.'
             : 'Only fields whose name contains one of the entries below.';
@@ -184,19 +189,28 @@
         bindCheckbox('enabled');
         bindCheckbox('collapseUnchanged');
         bindCheckbox('normalizeWhitespace');
+        bindCheckbox('highlightMarkup');
+        bindCheckbox('showFilterBar');
+        bindCheckbox('hideNoisyFields');
         bindNumber('contextLines', 0, 20);
         bindNumber('minLength', 0, 5000);
         bindSegmented('viewMode', 'viewMode');
         bindSegmented('granularity', 'granularity');
         bindSegmented('fieldMode', 'fieldMode');
 
-        $('fieldNames').addEventListener('change', function (event) {
-            var names = event.target.value
-                .split(',')
-                .map(function (s) { return s.trim().toLowerCase(); })
-                .filter(Boolean);
-            update({ fieldNames: names }).then(function () { flash('Field list saved'); });
-        });
+        function bindList(id, label) {
+            $(id).addEventListener('change', function (event) {
+                var names = event.target.value
+                    .split(',')
+                    .map(function (s) { return s.trim().toLowerCase(); })
+                    .filter(Boolean);
+                var patch = {};
+                patch[id] = names;
+                update(patch).then(function () { flash(label + ' saved'); });
+            });
+        }
+        bindList('fieldNames', 'Field list');
+        bindList('noisyFields', 'Bookkeeping list');
 
         $('rescan').addEventListener('click', function () {
             if (!currentTab) return;

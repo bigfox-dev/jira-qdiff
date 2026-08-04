@@ -68,6 +68,28 @@
             <input type="checkbox" id="normalizeWhitespace">
             <span>Ignore whitespace &amp; <code>&amp;nbsp;</code> noise</span>
         </label>
+
+        <label class="switch">
+            <input type="checkbox" id="highlightMarkup">
+            <span>Highlight wiki markup</span>
+        </label>
+    </section>
+
+    <section class="card">
+        <label class="switch">
+            <input type="checkbox" id="showFilterBar">
+            <span>Field filter above the history</span>
+        </label>
+
+        <label class="switch">
+            <input type="checkbox" id="hideNoisyFields">
+            <span>Hide bookkeeping fields by default</span>
+        </label>
+
+        <div class="field indent" id="noisy-field">
+            <label class="label" for="noisyFields">Bookkeeping fields</label>
+            <textarea id="noisyFields" rows="2" spellcheck="false"></textarea>
+        </div>
     </section>
 
     <section class="card">

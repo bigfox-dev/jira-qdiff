@@ -21,8 +21,11 @@ const CONTENT_JS = [
     'common/settings.js',
     'content/diff.js',
     'content/extract.js',
+    'content/markup.js',
+    'content/history.js',
     'content/render.js',
     'content/adapters.js',
+    'content/filter.js',
     'content/content.js'
 ];
 const CONTENT_CSS = ['content/styles.css'];

@@ -36,6 +36,27 @@
 
     var SERVER_TABLES = 'table[id^="changehistory_"], .changehistory table';
 
+    /** Author and timestamp live in the block header, above the change table. */
+    function serverMeta(tr) {
+        var block = tr.closest('.issue-data-block') || tr.closest('.actionContainer');
+        var details = block && block.querySelector('.action-details');
+        if (!details) return { author: null, when: null };
+
+        // Older skins and anonymised exports drop the user-hover class, so fall
+        // back to whatever link the header leads with.
+        var author = details.querySelector('.user-hover, a[href*="ViewProfile"], a');
+        var time = details.querySelector('time[datetime]');
+        var date = details.querySelector('.date');
+
+        return {
+            author: author ? (author.textContent || '').trim() : null,
+            when: time
+                ? (time.getAttribute('datetime') && (time.textContent || '').trim()) ||
+                  time.getAttribute('datetime')
+                : (date ? (date.getAttribute('title') || (date.textContent || '').trim()) : null)
+        };
+    }
+
     var serverAdapter = {
         id: 'server',
 
@@ -43,22 +64,32 @@
             return !!document.querySelector(SERVER_TABLES);
         },
 
+        historyRoot: function () {
+            return document.getElementById('issue_actions_container') ||
+                document.querySelector('.issuePanelContainer') ||
+                (document.querySelector(SERVER_TABLES) || {}).parentElement ||
+                null;
+        },
+
         collect: function (settings) {
             var targets = [];
             document.querySelectorAll(SERVER_TABLES).forEach(function (table) {
                 table.querySelectorAll('tr').forEach(function (tr) {
-                    if (tr.dataset.jdhState) return;
                     if (!tr.querySelector('td.activity-old-val, td.activity-new-val')) return;
 
                     var data = Extract.readHistoryRow(tr, settings);
                     if (!data) return;
+                    var meta = serverMeta(tr);
 
                     targets.push({
                         node: tr,
+                        rowElement: tr,
                         fieldName: data.name,
                         matchText: data.name,
                         oldText: data.oldText,
                         newText: data.newText,
+                        author: meta.author,
+                        when: meta.when,
                         mount: mountServer(tr, data)
                     });
                 });
@@ -243,6 +274,33 @@
         return '';
     }
 
+    /**
+     * Author and timestamp. The author chip sits inside the header; the
+     * timestamp is the header's *sibling*, one level up.
+     */
+    function cloudMeta(item, header) {
+        if (!header) return { author: null, when: null };
+
+        var chip = header.querySelector(AUTHOR_SELECTOR);
+        var when = null;
+        var parent = header.parentElement;
+        if (parent) {
+            for (var i = 0; i < parent.children.length; i++) {
+                var sibling = parent.children[i];
+                if (sibling === header) continue;
+                var text = (sibling.textContent || '').trim();
+                if (text) {
+                    when = text;
+                    break;
+                }
+            }
+        }
+        return {
+            author: chip ? (chip.textContent || '').trim() : null,
+            when: when
+        };
+    }
+
     /** First descendant that has the old/new shape. */
     function findPairIn(root) {
         var divs = root.querySelectorAll('div');
@@ -335,6 +393,19 @@
                 /(^|\.)atlassian\.(net|com)$/i.test(location.hostname);
         },
 
+        historyRoot: function () {
+            var feed = document.querySelector('[data-testid*="feed-container" i]');
+            if (feed) return feed;
+            var items = findHistoryItems();
+            if (!items.length) return findScopes()[0] || null;
+            // Nearest ancestor shared by every item.
+            var root = items[0];
+            while (root && !items.every(function (i) { return root.contains(i); })) {
+                root = root.parentElement;
+            }
+            return root;
+        },
+
         collect: function (settings) {
             var textOptions = {
                 normalizeWhitespace: settings.normalizeWhitespace,
@@ -345,13 +416,16 @@
                 stripLabel: false
             };
 
-            function makeTarget(container, pair, fieldName, matchText) {
+            function makeTarget(container, pair, fieldName, matchText, meta, rowElement) {
                 return {
                     node: container,
+                    rowElement: rowElement || container,
                     fieldName: fieldName,
                     matchText: matchText,
                     oldText: Extract.elementToText(pair.oldNode, textOptions),
                     newText: Extract.elementToText(pair.newNode, textOptions),
+                    author: (meta && meta.author) || null,
+                    when: (meta && meta.when) || null,
                     mount: mountCloud(container)
                 };
             }
@@ -361,7 +435,7 @@
                 var fromItems = [];
                 items.forEach(function (item) {
                     var pair = findPairIn(item);
-                    if (!pair || pair.container.dataset.jdhState) return;
+                    if (!pair) return;
 
                     var header = findHeader(item, pair.container);
                     var fieldName = fieldFromHeader(header);
@@ -373,7 +447,8 @@
                     // Prefer the field name alone: the header also carries the
                     // author, and a person called "Summary" should not count.
                     fromItems.push(makeTarget(
-                        pair.container, pair, fieldName, fieldName || headerText
+                        pair.container, pair, fieldName, fieldName || headerText,
+                        cloudMeta(item, header), item.closest('li') || item
                     ));
                 });
                 return fromItems;
@@ -405,7 +480,8 @@
 
                     accepted.push(container);
                     targets.push(makeTarget(
-                        container, pair, guessFieldName(label, settings), label
+                        container, pair, guessFieldName(label, settings), label,
+                        null, container.closest('li') || container
                     ));
                 });
             });

@@ -20,6 +20,8 @@
     var enhancements = [];
     var scheduled = null;
     var suppressObserver = false;
+    var chains = new Map();
+    var lastTargets = [];
 
     /* ------------------------------------------------------------------ *
      * Field selection
@@ -50,7 +52,7 @@
      * Enhancing one change record
      * ------------------------------------------------------------------ */
 
-    function enhance(target) {
+    function enhance(target, chain) {
         var node = target.node;
         if (node.dataset[STATE_ATTR]) return;
 
@@ -76,12 +78,21 @@
         try {
             widget = root.JDHRender.build(target.oldText, target.newText, settings, {
                 fieldName: target.fieldName,
+                chain: chain || null,
+                revisionIndex: chain
+                    ? root.JDHHistory.revisionIndexOf(chain, target)
+                    : -1,
                 onToggleOriginal: function () {
                     if (handle) handle.setOriginalVisible(true);
                 },
                 onViewChange: function (mode) {
                     if (typeof chrome !== 'undefined' && chrome.storage) {
                         root.JDHSettings.save({ viewMode: mode });
+                    }
+                },
+                onMarkupChange: function (on) {
+                    if (typeof chrome !== 'undefined' && chrome.storage) {
+                        root.JDHSettings.save({ highlightMarkup: on });
                     }
                 }
             });
@@ -99,7 +110,7 @@
 
         handle.setOriginalVisible(false);
         node.dataset[STATE_ATTR] = 'enhanced';
-        enhancements.push({ node: node, handle: handle });
+        enhancements.push({ node: node, handle: handle, widget: widget });
     }
 
     function teardown() {
@@ -112,6 +123,9 @@
             delete item.node.dataset[STATE_ATTR];
         });
         enhancements = [];
+        chains = new Map();
+        lastTargets = [];
+        root.JDHFilter.teardown();
         document.querySelectorAll('[data-jdh-state]').forEach(function (node) {
             delete node.dataset[STATE_ATTR];
         });
@@ -125,6 +139,9 @@
         if (!settings.enabled) return;
         suppressObserver = true;
         try {
+            var collected = [];
+            var historyRoot = null;
+
             root.JDHAdapters.selectAdapters(settings.platform).forEach(function (adapter) {
                 var targets;
                 try {
@@ -133,8 +150,28 @@
                     console.warn('[jira-diff] adapter "' + adapter.id + '" failed', err);
                     return;
                 }
-                targets.forEach(enhance);
+                if (!targets.length) return;
+                collected = collected.concat(targets);
+                if (!historyRoot && typeof adapter.historyRoot === 'function') {
+                    try {
+                        historyRoot = adapter.historyRoot();
+                    } catch (err) {
+                        historyRoot = null;
+                    }
+                }
             });
+
+            // Chains need every change to a field, including the short ones the
+            // diff itself skips — otherwise a revision would silently go missing
+            // and blame would credit the wrong person.
+            chains = root.JDHHistory.buildChains(collected);
+
+            collected.forEach(function (target) {
+                enhance(target, chains.get(target.fieldName) || null);
+            });
+
+            root.JDHFilter.update(collected, settings, historyRoot);
+            lastTargets = collected;
         } finally {
             suppressObserver = false;
         }
@@ -152,13 +189,15 @@
         return node.nodeType === 1 && node.classList &&
             (node.classList.contains('jdh-host') ||
              node.classList.contains('jdh-restore') ||
+             node.classList.contains('jdh-filter') ||
              node.classList.contains('jdh'));
     }
 
     /** Ignore the DOM churn we cause ourselves, otherwise we re-scan forever. */
     function isOurMutation(mutation) {
         var target = mutation.target;
-        if (target && target.nodeType === 1 && target.closest && target.closest('.jdh')) {
+        if (target && target.nodeType === 1 && target.closest &&
+            target.closest('.jdh, .jdh-filter')) {
             return true;
         }
         var touched = Array.prototype.slice.call(mutation.addedNodes)
@@ -210,6 +249,16 @@
                 };
             }),
             enhanced: enhancements.length,
+            hiddenFields: root.JDHFilter.hiddenFields(),
+            chains: Array.from(chains.values()).map(function (chain) {
+                return {
+                    field: chain.field,
+                    revisions: chain.revisions.length,
+                    complete: chain.complete,
+                    gaps: chain.gaps.length,
+                    domOrderNewestFirst: chain.domOrderNewestFirst
+                };
+            }),
             states: {}
         };
 
@@ -256,9 +305,36 @@
      * Boot
      * ------------------------------------------------------------------ */
 
+    /** True when `key` is the only setting that changed. */
+    function onlyDiffers(before, after, key) {
+        var differing = Object.keys(root.JDHSettings.DEFAULTS).filter(function (name) {
+            return JSON.stringify(before[name]) !== JSON.stringify(after[name]);
+        });
+        return differing.length === 1 && differing[0] === key;
+    }
+
     function applySettings(next) {
+        var previous = settings;
+
+        // Toggling markup from a widget's own menu writes to storage, which comes
+        // straight back here. Repainting in place keeps expanded lines and the
+        // selected revision pair instead of throwing the widgets away.
+        if (onlyDiffers(previous, next, 'highlightMarkup')) {
+            settings = next;
+            enhancements.forEach(function (item) {
+                if (item.widget && item.widget.setMarkup) {
+                    item.widget.setMarkup(next.highlightMarkup);
+                }
+            });
+            return;
+        }
+
+        var noiseChanged = previous.hideNoisyFields !== next.hideNoisyFields ||
+            JSON.stringify(previous.noisyFields) !== JSON.stringify(next.noisyFields);
+
         settings = next;
         teardown();
+        if (noiseChanged) root.JDHFilter.reset();
         if (settings.enabled) scan();
     }
 

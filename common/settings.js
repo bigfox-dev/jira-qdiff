@@ -43,7 +43,27 @@
         /** In 'auto' mode: minimum combined length before a field qualifies. */
         minLength: 80,
         /** Safety valve — skip absurdly large values. */
-        maxChars: 400000
+        maxChars: 400000,
+
+        /** Dim wiki markup and highlight its structure inside the diff. */
+        highlightMarkup: true,
+
+        /** Chip bar above the history feed for switching fields off. */
+        showFilterBar: true,
+        /** Switch the bookkeeping fields off on first load. */
+        hideNoisyFields: true,
+        /** Matched as a substring, so localisations mostly work too. */
+        noisyFields: [
+            'rank',
+            'worklog id',
+            'time spent',
+            'remaining estimate',
+            'original estimate',
+            'workflow',
+            'remoteissuelink',
+            'remoteworkitemlink',
+            'attachment id'
+        ]
     };
 
     var STORAGE_KEY = 'settings';

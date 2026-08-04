@@ -31,6 +31,19 @@ sdílené — liší se jen adaptér, který změnu v DOM najde.
   víceřádkovou nebo dostatečně dlouhou hodnotu (Description, Environment,
   Acceptance Criteria, vlastní textová pole…), krátké technické změny
   (Rank, Time Spent, Worklog Id) zůstanou beze změny.
+- **Filtr polí** — nad historií se objeví lišta s chipy pro každé pole
+  a počtem změn. Kliknutím pole schováš; účetní pole (Rank, Worklog Id,
+  Time Spent, Remaining Estimate…) jsou schovaná hned. Skrývá se po řádcích,
+  takže on-prem blok zmizí až když v něm nezůstane nic.
+- **Timeline revizí** — tlačítko *Revisions* zřetězí všechny změny jednoho pole
+  a nechá tě porovnat **libovolné dvě verze**, nejen po sobě jdoucí. Odpoví
+  na „co se v popisu změnilo za celý sprint".
+- **Blame po řádcích** — třetí pohled vedle *Side by side* / *Unified*. Ke
+  každému řádku aktuální hodnoty ukáže, kdo ho zavedl a kdy.
+- **Zvýraznění wiki markupu** — ztlumí `h2.`, `{noformat}`, `{{…}}`, `*tučné*`,
+  `[odkazy]`, `!obrázky!`. Přepínatelné v nabídce `⋯` u každého diffu.
+- **Kopírování** — nová hodnota, stará hodnota, nebo celý diff jako
+  standardní unified patch.
 
 ---
 
@@ -91,6 +104,10 @@ i samotné oprávnění).
 | Collapse unchanged lines | zapnuto | Sbalování nezměněných úseků. |
 | Context lines | 3 | Kolik nezměněných řádků zůstane kolem změny. |
 | Ignore whitespace & `&nbsp;` noise | zapnuto | Sjednotí odsazení a sloučí prázdné řádky. |
+| Highlight wiki markup | zapnuto | Výchozí stav zvýraznění; přepínatelné i u každého diffu v nabídce `⋯`. |
+| Field filter above the history | zapnuto | Lišta s chipy nad historií. |
+| Hide bookkeeping fields by default | zapnuto | Účetní pole schová hned po načtení. |
+| Bookkeeping fields | rank, worklog id, time spent, … | Co se považuje za šum; porovnává se jako podřetězec. |
 | Which fields | Auto | *Auto* = víceřádkové/dlouhé hodnoty + jmenovaná pole, *Named only* = jen jmenovaná pole. |
 | Min. length for auto | 80 | Práh délky pro režim *Auto*. |
 | Field names | description, popis, environment, … | Seznam se porovnává jako podřetězec, takže funguje i na lokalizované názvy. |
@@ -109,8 +126,11 @@ common/settings.js     sdílené defaulty + storage vrstva (popup i content)
 content/
   diff.js              Myers O(ND) + patience anchory, word/char tokenizer
   extract.js           DOM -> čistý text (labely, hist-value, <br/>, &nbsp;, seznamy)
-  render.js            model řádků, sbalování, CSS grid, lišta widgetu
-  adapters.js          hledání změn: Server/DC tabulka + Cloud heuristika
+  markup.js            tokenizer Jira wiki markupu (round-trip garantovaný)
+  history.js           řetěz revizí, detekce mezer, blame
+  render.js            model řádků, sbalování, CSS grid, lišta widgetu, blame
+  adapters.js          hledání změn: Server/DC tabulka + Cloud struktura
+  filter.js            lišta filtru polí nad historií
   content.js           orchestrace, MutationObserver, přepínání, diagnostika
   styles.css           vzhled widgetu (světlý/tmavý)
 popup/                 popup UI
@@ -125,6 +145,27 @@ test/
   background.test.mjs  background proti falešným API obou prohlížečů
   adapters.test.mjs    routing platforem + parsování Cloud labelu
 ```
+
+### Řetěz revizí a proč hlásí neúplnost
+
+Jeden záznam historie říká jen „z tohoto se stalo tohle". Timeline i blame ale
+potřebují celou posloupnost hodnot, takže se záznamy jednoho pole zřetězí.
+Řetěz je důvěryhodný jen když na sebe navazují: `záznam[i].newText` se musí
+rovnat `záznam[i+1].oldText`.
+
+Když se nerovnají, něco chybí — Cloud starší položky dolazuje až při scrollování,
+a Jira, která by v historii zkracovala dlouhé hodnoty, by se rozbila stejně.
+Takové zlomy se **evidují jako mezery**, ne zamlčí: v panelu *Revisions* se
+objeví varování a blame se označí za nedůvěryhodný. Radši přiznaná neúplnost
+než tiše špatná atribuce.
+
+Dvě věci z toho plynou:
+
+- **Výchozí pohled je vždy ta změna, kterou Jira u dané položky zaznamenala**,
+  nikdy `chain[i-1] → chain[i]`. Přes mezeru by to jinak ukázalo změnu, kterou
+  nikdo neudělal.
+- **Pořadí se nepředpokládá.** Jira umí activity feed řadit od nejnovějšího
+  i od nejstaršího, takže se zkusí oba směry a vybere ten, který navazuje.
 
 ### Jak se najde změna na každé platformě
 

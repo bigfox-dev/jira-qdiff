@@ -23,7 +23,14 @@
       "Bash(cp content/styles.css /tmp/styles.bak)",
       "Bash(cp popup/popup.css /tmp/popup.bak)",
       "Bash(cp viewer/viewer.css /tmp/viewer.bak)",
-      "Bash(node \"C:/Users/fox/AppData/Local/Temp/claude/C--Users-fox-Workspaces-AI-jira-qdiff/b52438ec-cacf-4134-a0fd-73231c5766bb/scratchpad/theme-css.js\")"
+      "Bash(node \"C:/Users/fox/AppData/Local/Temp/claude/C--Users-fox-Workspaces-AI-jira-qdiff/b52438ec-cacf-4134-a0fd-73231c5766bb/scratchpad/theme-css.js\")",
+      "Bash(awk 'NR>=405 && NR<=425 {printf \"%d\\\\t%s\\\\n\", NR, $0}' content/content.js)",
+      "Bash(sed -n '/const CONTENT_JS/,/\\\\];/p' background.js)",
+      "Bash(sed -n '/const CONTENT_JS/,/\\\\];/p' dist/chrome/background.js)",
+      "Bash(awk 'NR>=430 && NR<=445 {printf \"%d\\\\t%s\\\\n\", NR, $0}' content/content.js)",
+      "Bash(cp background.js /tmp/bg.bak)",
+      "Bash(cp background.js __TRACKED_VAR__/bg.bak)",
+      "Bash(cp \"C:/Users/fox/AppData/Local/Temp/claude/C--Users-fox-Workspaces-AI-jira-qdiff/b52438ec-cacf-4134-a0fd-73231c5766bb/scratchpad/bg.bak\" background.js)"
     ]
   }
 }

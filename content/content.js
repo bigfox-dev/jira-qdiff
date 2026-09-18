@@ -280,6 +280,18 @@
      * ------------------------------------------------------------------ */
 
     function diagnose() {
+        var missing = missingModules();
+        if (missing.length) {
+            var broken = {
+                host: location.hostname,
+                missingModules: missing,
+                hint: 'The content-script registration still lists an older set of ' +
+                    'files. Reload the extension on the extensions page.'
+            };
+            console.log('[jira-diff] diagnostics', broken);
+            return broken;
+        }
+
         var Adapters = root.JDHAdapters;
         var items = Adapters.findHistoryItems();
         var scopes = Adapters.findScopes();
@@ -316,6 +328,20 @@
             var state = node.dataset[STATE_ATTR];
             report.states[state] = (report.states[state] || 0) + 1;
         });
+
+        // When the Cloud adapter is in play but produced nothing, the per-item
+        // detail below is empty and says nothing about why. Survey the page
+        // instead: which guard rejected what, and what testids are actually
+        // there now. This is the report that matters after Atlassian reshapes
+        // the DOM.
+        var cloudActive = report.adapters.indexOf('cloud') !== -1;
+        if (cloudActive && (!items.length || !enhancements.length)) {
+            try {
+                report.cloudSurvey = Adapters.surveyCloud();
+            } catch (err) {
+                report.cloudSurvey = { error: String(err) };
+            }
+        }
 
         // Per history item: what was found, and what the field filter made of it.
         report.items = items.slice(0, 40).map(function (item) {
@@ -415,7 +441,35 @@
         applySettings: applySettings
     };
 
+    /**
+     * Every module this file expects to have been injected before it.
+     *
+     * A stale content-script registration injects the file list it was created
+     * with, so after an update that adds a module the new one is simply absent.
+     * Without this check that surfaces as an uncaught TypeError deep inside
+     * start(), the whole content script aborts, and the extension looks dead
+     * with nothing pointing at the cause.
+     */
+    var REQUIRED_MODULES = [
+        'JDHSettings', 'JDHTheme', 'JDHDiff', 'JDHExtract', 'JDHMarkup',
+        'JDHHistory', 'JDHRender', 'JDHAdapters', 'JDHFilter', 'JDHExpand'
+    ];
+
+    function missingModules() {
+        return REQUIRED_MODULES.filter(function (name) { return !root[name]; });
+    }
+
     function start() {
+        var missing = missingModules();
+        if (missing.length) {
+            console.error(
+                '[jira-diff] not starting — these modules were never injected: ' +
+                missing.join(', ') + '. The content-script registration is out of ' +
+                'date; reload the extension on the extensions page to rebuild it.'
+            );
+            return;
+        }
+
         // Paint the theme before the first widget exists, so nothing flashes
         // in the wrong palette.
         root.JDHTheme.apply(root.JDHSettings.DEFAULTS.theme);

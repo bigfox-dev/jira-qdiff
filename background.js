@@ -90,7 +90,16 @@ async function unregisterSite(pattern) {
     }
 }
 
-/** Drop registrations whose permission is gone; (re)create the ones that stay. */
+/**
+ * Drop registrations whose permission is gone and rebuild the ones that stay.
+ *
+ * Every registration we own is torn down first rather than updated in place.
+ * `persistAcrossSessions` means a registration outlives the build that created
+ * it, keeping the file list it was born with — so a release that adds a content
+ * script would keep injecting the old list, the new module would be missing,
+ * and the content script would die on its first use of it. Rebuilding from
+ * CONTENT_JS every time makes that drift impossible.
+ */
 async function reconcile() {
     const sites = await getSites();
     const granted = await api.permissions.getAll();
@@ -99,13 +108,12 @@ async function reconcile() {
     const valid = sites.filter((pattern) => origins.has(pattern));
     if (valid.length !== sites.length) await setSites(valid);
 
-    const wanted = new Set(valid.map(scriptId));
-    const stale = (await registeredIds()).filter((id) => !wanted.has(id));
-    if (stale.length) {
+    const ours = await registeredIds();
+    if (ours.length) {
         try {
-            await api.scripting.unregisterContentScripts({ ids: stale });
+            await api.scripting.unregisterContentScripts({ ids: ours });
         } catch (err) {
-            console.warn('[jira-diff] could not unregister stale scripts', err);
+            console.warn('[jira-diff] could not clear registrations', err);
         }
     }
 

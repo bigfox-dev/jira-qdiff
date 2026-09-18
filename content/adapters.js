@@ -384,6 +384,144 @@
         return { oldNode: first, newNode: last };
     }
 
+    /* ------------------------------------------------------------------ *
+     * Survey — what is on the page when the adapter comes up empty
+     *
+     * Atlassian reshapes this DOM without notice, and when that happens the
+     * only useful question is "which guard rejected what". These helpers mirror
+     * the real guards above rather than describing them, so the answer cannot
+     * drift away from the code that actually does the rejecting.
+     * ------------------------------------------------------------------ */
+
+    function describeElement(el) {
+        if (!el) return null;
+        var testid = el.getAttribute('data-testid') || el.getAttribute('data-test-id');
+        return el.tagName.toLowerCase() +
+            (testid ? '[data-testid="' + testid + '"]' : '') +
+            (el.getAttribute('role') ? '[role=' + el.getAttribute('role') + ']' : '');
+    }
+
+    /** Nearest ancestors that carry a testid — the trail back to a known anchor. */
+    function testidTrail(el, depth) {
+        var trail = [];
+        var node = el.parentElement;
+        while (node && trail.length < (depth || 3)) {
+            var testid = node.getAttribute('data-testid') || node.getAttribute('data-test-id');
+            if (testid) trail.push(testid);
+            node = node.parentElement;
+        }
+        return trail;
+    }
+
+    /** Every history/activity-ish testid on the page, most frequent first. */
+    function testidHistogram(limit) {
+        var counts = new Map();
+        document.querySelectorAll('[data-testid], [data-test-id]').forEach(function (el) {
+            var value = el.getAttribute('data-testid') || el.getAttribute('data-test-id') || '';
+            if (!/history|activity|changelog|feed/i.test(value)) return;
+            counts.set(value, (counts.get(value) || 0) + 1);
+        });
+        var out = [];
+        counts.forEach(function (count, testid) { out.push({ testid: testid, count: count }); });
+        out.sort(function (a, b) { return b.count - a.count; });
+        return out.slice(0, limit || 30);
+    }
+
+    /**
+     * Containers that look like they could be an old/new pair, each with the
+     * reason the adapter turned it down.
+     */
+    function surveyCandidates(limit) {
+        var scopes = findScopes();
+        var roots = scopes.length ? scopes : [document.body];
+        var found = [];
+        var seen = new Set();
+
+        roots.forEach(function (rootEl) {
+            if (!rootEl) return;
+            rootEl.querySelectorAll('div').forEach(function (el) {
+                var count = el.childElementCount;
+                if (count < 2 || count > 4) return;
+                if (seen.has(el)) return;
+                if (el.closest('.jdh, .jdh-host, .jdh-filter, .jdh-overlay')) return;
+
+                // Describe every child, not just the ends. When the shape is
+                // what changed, the child list is the whole story — and ranking
+                // on it keeps the genuinely interesting container at the top
+                // instead of letting a plain two-child wrapper outrank it.
+                var children = Array.prototype.map.call(el.children, function (child) {
+                    var text = (child.textContent || '').trim();
+                    return {
+                        tag: child.tagName.toLowerCase(),
+                        chars: text.length,
+                        preview: text.slice(0, 60)
+                    };
+                });
+                var total = children.reduce(function (sum, c) { return sum + c.chars; }, 0);
+                if (total < 20) return;
+
+                var middleText = count === 3 ? children[1].preview : null;
+                var interactive = el.querySelector(INTERACTIVE);
+
+                var reason;
+                if (count !== 3) {
+                    reason = 'childElementCount is ' + count + ', the adapter needs 3';
+                } else if (children[1].chars > 3) {
+                    reason = 'separator holds text ' + JSON.stringify(middleText.slice(0, 24));
+                } else if (!children[0].chars && !children[2].chars) {
+                    reason = 'both sides empty';
+                } else if (interactive) {
+                    reason = 'contains interactive ' + describeElement(interactive);
+                } else {
+                    reason = 'ACCEPTED';
+                }
+
+                seen.add(el);
+                found.push({
+                    el: el,
+                    info: {
+                        reason: reason,
+                        childCount: count,
+                        totalChars: total,
+                        children: children,
+                        ancestorTestids: testidTrail(el, 3)
+                    }
+                });
+                if (found.length >= 400) return;
+            });
+        });
+
+        // Keep only the innermost candidates. A wrapper around a change record
+        // matches the same loose shape test, but it *contains* the real thing —
+        // so anything holding another candidate is scaffolding, not the pair.
+        var innermost = found.filter(function (entry) {
+            return !found.some(function (other) {
+                return other !== entry && entry.el.contains(other.el);
+            });
+        });
+
+        innermost.sort(function (a, b) {
+            if ((a.info.reason === 'ACCEPTED') !== (b.info.reason === 'ACCEPTED')) {
+                return a.info.reason === 'ACCEPTED' ? -1 : 1;
+            }
+            return b.info.totalChars - a.info.totalChars;
+        });
+        return innermost.slice(0, limit || 12).map(function (entry) { return entry.info; });
+    }
+
+    function surveyCloud(options) {
+        var opts = options || {};
+        return {
+            itemSelector: CLOUD_ITEM_SELECTOR,
+            itemsMatched: findHistoryItems().length,
+            authorChips: document.querySelectorAll(AUTHOR_SELECTOR).length,
+            authorSelector: AUTHOR_SELECTOR,
+            scopesMatched: findScopes().length,
+            historyTestids: testidHistogram(opts.maxTestids),
+            candidates: surveyCandidates(opts.maxCandidates)
+        };
+    }
+
     var cloudAdapter = {
         id: 'cloud',
 
@@ -555,7 +693,8 @@
         findHistoryItems: findHistoryItems,
         findHeader: findHeader,
         fieldFromHeader: fieldFromHeader,
-        findPairIn: findPairIn
+        findPairIn: findPairIn,
+        surveyCloud: surveyCloud
     };
 
     if (typeof module === 'object' && module.exports) {

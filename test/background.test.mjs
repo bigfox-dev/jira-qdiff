@@ -20,6 +20,11 @@ const SOURCE = fs.readFileSync(path.join(ROOT, 'background.js'), 'utf8');
 
 const PATTERN = 'https://jira.firma.cz/*';
 
+/** Mirrors background.js's scriptId(). */
+function scriptIdFor(pattern) {
+    return 'jdh-' + pattern.replace(/[^a-z0-9]+/gi, '_');
+}
+
 /** Promise-based extension API double, mirroring what both browsers expose. */
 function makeApi(options = {}) {
     const state = {
@@ -29,6 +34,7 @@ function makeApi(options = {}) {
         origins: new Set(options.origins || []),
         injected: [],
         registerCalls: [],
+        unregisterCalls: [],
         createdTabs: []
     };
 
@@ -88,6 +94,7 @@ function makeApi(options = {}) {
                 }
             },
             async unregisterContentScripts({ ids }) {
+                state.unregisterCalls.push([...ids]);
                 state.scripts = state.scripts.filter((s) => !ids.includes(s.id));
             },
             async insertCSS({ target }) {
@@ -192,6 +199,42 @@ for (const [label, wire] of flavours) {
         assert.equal(state.scripts.length, 1, 'registration must be updated, not re-added');
     });
 }
+
+test('reconcile tears down its registrations before rebuilding them', async () => {
+    // `persistAcrossSessions` keeps a registration alive across updates, so it
+    // carries the file list it was created with. Relying on an in-place update
+    // to refresh that list puts the fix at the mercy of each engine's
+    // updateContentScripts semantics; clearing first does not. This asserts the
+    // teardown actually happens, which an update-in-place implementation would
+    // skip for a registration it considers current.
+    const { api, state } = makeApi({ origins: [PATTERN] });
+    load({ browser: api });
+
+    await send(state, 'jdh:enableSite', { pattern: PATTERN, tabId: 1 });
+    const currentFiles = plain(state.scripts[0].js);
+    assert.ok(currentFiles.length > 1);
+    state.unregisterCalls.length = 0;
+
+    // Age the registration: pretend it predates a couple of modules.
+    state.scripts[0].js = currentFiles.slice(0, 2);
+    state.scripts[0].css = [];
+
+    await send(state, 'jdh:reconcile', {});
+
+    assert.deepEqual(
+        state.unregisterCalls, [[scriptIdFor(PATTERN)]],
+        'the existing registration must be cleared, not updated in place'
+    );
+    assert.equal(state.scripts.length, 1, 'still exactly one registration');
+    assert.deepEqual(
+        plain(state.scripts[0].js), currentFiles,
+        'the rebuilt registration carries the current file list'
+    );
+    assert.ok(
+        state.scripts[0].css.includes('content/styles.css'),
+        'stylesheets are restored too'
+    );
+});
 
 test('reconcile drops registrations whose permission was revoked', async () => {
     const { api, state } = makeApi({ origins: [PATTERN] });
